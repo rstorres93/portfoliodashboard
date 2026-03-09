@@ -192,7 +192,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); min-hei
 <!-- NAV -->
 <nav class="nav">
   <div class="nav-brand">PORTFOLIO ENGINE</div>
-  <div class="nav-tab active" onclick="showPage('overview')">OVERVIEW</div>
+  <div class="nav-tab active" onclick="showPage('overview', this)">OVERVIEW</div>
   <div class="nav-tab" onclick="showPage('bridgewater')">BRIDGEWATER RISK</div>
   <div class="nav-tab" onclick="showPage('mckinsey')">McKINSEY MACRO</div>
   <div class="nav-tab" onclick="showPage('blackrock')">BLACKROCK CONSTRUCT</div>
@@ -1522,11 +1522,12 @@ function updatePositions() {
   });
 }
 
-function showPage(id) {
+function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  event.target.classList.add('active');
+  if(el) el.classList.add('active');
+}
 }
 </script>
 </body>
