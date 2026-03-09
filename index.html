@@ -193,22 +193,22 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); min-hei
 <nav class="nav">
   <div class="nav-brand">PORTFOLIO ENGINE</div>
   <div class="nav-tab active" onclick="showPage('overview', this)">OVERVIEW</div>
-  <div class="nav-tab" onclick="showPage('bridgewater')">BRIDGEWATER RISK</div>
-  <div class="nav-tab" onclick="showPage('mckinsey')">McKINSEY MACRO</div>
-  <div class="nav-tab" onclick="showPage('blackrock')">BLACKROCK CONSTRUCT</div>
-  <div class="nav-tab" onclick="showPage('citadel')">CITADEL TECHNICAL</div>
-  <div class="nav-tab" onclick="showPage('goldman')">GOLDMAN SCREENER</div>
-  <div class="nav-tab" onclick="showPage('jpmorgan')">JPM CATALYST</div>
-  <div class="nav-tab" onclick="showPage('renaissance')">REN TECH PATTERNS</div>
-  <div class="nav-tab" onclick="showPage('bain')">BAIN COMPETITIVE</div>
-  <div class="nav-tab" onclick="showPage('harvard')">HARVARD INCOME</div>
-  <div class="nav-tab" onclick="showPage('action')">ACTION PLAN</div>
-  <div class="nav-tab" onclick="showPage('redteam')" style="color:var(--accent2)">RED TEAM</div>
-  <div class="nav-tab" onclick="showPage('sources')">SOURCE INTEL</div>
-  <div class="nav-tab" onclick="showPage('tax')" style="color:var(--accent3)">DELOITTE TAX</div>
-  <div class="nav-tab" onclick="showPage('morganstanley')">MORGAN STANLEY</div>
-  <div class="nav-tab" onclick="showPage('estate')" style="color:var(--accent5)">ESTATE PLAN</div>
-  <div class="nav-tab" onclick="showPage('brief')" style="color:var(--accent4)">EXEC BRIEF</div>
+  <div class="nav-tab" onclick="showPage('bridgewater', this)">BRIDGEWATER RISK</div>
+  <div class="nav-tab" onclick="showPage('mckinsey', this)">McKINSEY MACRO</div>
+  <div class="nav-tab" onclick="showPage('blackrock', this)">BLACKROCK CONSTRUCT</div>
+  <div class="nav-tab" onclick="showPage('citadel', this)">CITADEL TECHNICAL</div>
+  <div class="nav-tab" onclick="showPage('goldman', this)">GOLDMAN SCREENER</div>
+  <div class="nav-tab" onclick="showPage('jpmorgan', this)">JPM CATALYST</div>
+  <div class="nav-tab" onclick="showPage('renaissance', this)">REN TECH PATTERNS</div>
+  <div class="nav-tab" onclick="showPage('bain', this)">BAIN COMPETITIVE</div>
+  <div class="nav-tab" onclick="showPage('harvard', this)">HARVARD INCOME</div>
+  <div class="nav-tab" onclick="showPage('action', this)">ACTION PLAN</div>
+  <div class="nav-tab" onclick="showPage('redteam', this)" style="color:var(--accent2)">RED TEAM</div>
+  <div class="nav-tab" onclick="showPage('sources', this)">SOURCE INTEL</div>
+  <div class="nav-tab" onclick="showPage('tax', this)" style="color:var(--accent3)">DELOITTE TAX</div>
+  <div class="nav-tab" onclick="showPage('morganstanley', this)">MORGAN STANLEY</div>
+  <div class="nav-tab" onclick="showPage('estate', this)" style="color:var(--accent5)">ESTATE PLAN</div>
+  <div class="nav-tab" onclick="showPage('brief', this)" style="color:var(--accent4)">EXEC BRIEF</div>
 </nav>
 
 <!-- ═══════════════════════════════════════════ OVERVIEW ═══ -->
@@ -216,20 +216,14 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); min-hei
   <div class="page-header">
     <div class="firm-tag">ALADDIN FRAMEWORK // CRYPTO ADAPTATION</div>
     <h2>MASTER PORTFOLIO OVERVIEW</h2>
-    <p>Full institutional analysis engine — 13 frameworks activated. Live data auto-updated weekly by n8n automation. <span class="live-report-date" style="color:#00c8ff">Last updated: loading...</span></p>
+    <p>Full institutional analysis engine — 13 frameworks activated against your $83,457 crypto portfolio. March 6, 2026.</p>
   </div>
 
   <div class="grid-4" style="margin-bottom:20px">
-    <div id="kpi-total-value" class="kpi blue"><div class="kpi-label">Total Value (BTC+SOL+ETH)</div><div class="kpi-value blue">$20,460</div><div class="kpi-sub">3 core positions — live prices</div></div>
-    <div class="kpi red"><div class="kpi-label">Unrealized P&L</div><div class="kpi-value red">-$14,540</div><div class="kpi-sub">vs $35,000 invested</div></div>
-    <div class="kpi yellow"><div class="kpi-label">Recovery Needed</div><div class="kpi-value yellow" id="kpi-recovery">+71%</div><div class="kpi-sub">to break even</div></div>
-    <div id="kpi-risk-score" class="kpi red"><div class="kpi-label">Overall Risk Score</div><div class="kpi-value red">8.4/10</div><div class="kpi-sub">Extreme risk</div></div>
-  </div>
-  <!-- LIVE POSITION CARDS -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
-    <div id="pos-btc"></div>
-    <div id="pos-sol"></div>
-    <div id="pos-eth"></div>
+    <div class="kpi blue"><div class="kpi-label">Total Value</div><div class="kpi-value blue">$83,457</div><div class="kpi-sub">20 positions</div></div>
+    <div class="kpi red"><div class="kpi-label">1-Day VaR (95%)</div><div class="kpi-value red">-$7,200</div><div class="kpi-sub">8.6% drawdown risk</div></div>
+    <div class="kpi yellow"><div class="kpi-label">Illiquid / Locked</div><div class="kpi-value yellow">17.7%</div><div class="kpi-sub">$14,752 staked</div></div>
+    <div class="kpi red"><div class="kpi-label">Overall Risk Score</div><div class="kpi-value red">8.4/10</div><div class="kpi-sub">Extreme risk</div></div>
   </div>
 
   <div class="grid-2" style="margin-bottom:20px">
@@ -285,27 +279,27 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); min-hei
     <div class="panel">
       <div class="panel-title">Scenario Range</div>
       <div class="scenario-card" style="border-color:rgba(255,61,107,0.25)">
-        <div class="scenario-name" style="color:var(--accent2)">🐻 Bear: BTC $67K / SOL $60 / ETH $1,400</div>
-        <div class="scenario-trigger">BTC -10% · SOL -27% · ETH -28%</div>
+        <div class="scenario-name" style="color:var(--accent2)">Bear: 2022-Style Crash</div>
+        <div class="scenario-trigger">BTC -65% · Alts -80%</div>
         <div class="scenario-stats">
-          <div class="scenario-stat"><div class="scenario-stat-label">Portfolio Value</div><div class="scenario-stat-val down" id="scenario-bear-val">~$15,700</div></div>
-          <div class="scenario-stat"><div class="scenario-stat-label">Loss vs Cost</div><div class="scenario-stat-val down" id="scenario-bear-pnl">-$19,300</div></div>
+          <div class="scenario-stat"><div class="scenario-stat-label">Portfolio Value</div><div class="scenario-stat-val down">~$16,700</div></div>
+          <div class="scenario-stat"><div class="scenario-stat-label">Loss</div><div class="scenario-stat-val down">-$66,700</div></div>
         </div>
       </div>
       <div class="scenario-card" style="border-color:rgba(255,200,50,0.2)">
-        <div class="scenario-name" style="color:var(--accent3)">📊 Base: BTC $88K / SOL $175 / ETH $3,200</div>
-        <div class="scenario-trigger">CoinShares 2026 base case</div>
+        <div class="scenario-name" style="color:var(--accent3)">Base: CoinShares Base</div>
+        <div class="scenario-trigger">BTC $110-140K · Alts +40%</div>
         <div class="scenario-stats">
-          <div class="scenario-stat"><div class="scenario-stat-label">Portfolio Value</div><div class="scenario-stat-val neutral-val" id="scenario-base-val">~$46,200</div></div>
-          <div class="scenario-stat"><div class="scenario-stat-label">Gain vs Cost</div><div class="scenario-stat-val up" id="scenario-base-pnl">+$11,200</div></div>
+          <div class="scenario-stat"><div class="scenario-stat-label">Portfolio Value</div><div class="scenario-stat-val neutral-val">~$145,000</div></div>
+          <div class="scenario-stat"><div class="scenario-stat-label">Gain</div><div class="scenario-stat-val up">+$61,500</div></div>
         </div>
       </div>
       <div class="scenario-card" style="border-color:rgba(0,229,160,0.2)">
-        <div class="scenario-name" style="color:var(--accent4)">🚀 Bull: BTC $110K / SOL $250 / ETH $4,500</div>
-        <div class="scenario-trigger">Fed pivot + Clarity Act + institutional inflows</div>
+        <div class="scenario-name" style="color:var(--accent4)">Bull: Fed Panic Easing</div>
+        <div class="scenario-trigger">BTC $170K · Alts +120%</div>
         <div class="scenario-stats">
-          <div class="scenario-stat"><div class="scenario-stat-label">Portfolio Value</div><div class="scenario-stat-val up" id="scenario-bull-val">~$62,000</div></div>
-          <div class="scenario-stat"><div class="scenario-stat-label">Gain vs Cost</div><div class="scenario-stat-val up" id="scenario-bull-pnl">+$27,000</div></div>
+          <div class="scenario-stat"><div class="scenario-stat-label">Portfolio Value</div><div class="scenario-stat-val up">~$220,000</div></div>
+          <div class="scenario-stat"><div class="scenario-stat-label">Gain</div><div class="scenario-stat-val up">+$136,500</div></div>
         </div>
       </div>
     </div>
@@ -1047,22 +1041,13 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); min-hei
   <div class="page-header">
     <div class="firm-tag">PIPELINE STEPS 14-16 // DISTILLED EXECUTIVE SUMMARY</div>
     <h2>EXECUTIVE BRIEF</h2>
-    <p>Full 13-framework analysis + Red Team challenges distilled to the essential decision brief. Written in plain language. Live data auto-injected by n8n every Sunday 9am.</p>
+    <p>Full 13-framework analysis + Red Team challenges distilled to the essential decision brief. Written in plain language. Everything you need to act — nothing you don't.</p>
   </div>
 
   <div class="grid-3" style="margin-bottom:24px">
     <div class="kpi red"><div class="kpi-label">Portfolio Health</div><div class="kpi-value red">CRITICAL</div><div class="kpi-sub">Restructure required</div></div>
     <div class="kpi yellow"><div class="kpi-label">Market Timing</div><div class="kpi-value yellow">NEUTRAL</div><div class="kpi-sub">Wait for FOMC Mar 18</div></div>
     <div class="kpi green"><div class="kpi-label">Macro Outlook H2</div><div class="kpi-value green">BULLISH</div><div class="kpi-sub">If Fed pivots + Clarity Act</div></div>
-  </div>
-
-  <!-- CLAUDE AI WEEKLY BRIEFING -->
-  <div class="panel-lg" style="margin-bottom:20px;border-color:rgba(0,200,255,0.25)">
-    <div class="panel-title" style="color:var(--accent)">⚡ CLAUDE AI — Live Weekly Intelligence</div>
-    <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:14px;letter-spacing:2px">GENERATED BY CLAUDE SONNET 4 // <span class="live-report-date">WEEKLY</span> // LIVE DATA FROM COINGECKO + BLOCKCHAIN.INFO</div>
-    <div id="claude-analysis-content" style="font-size:13px;line-height:1.8;color:#c8d8e8">
-      <p style="color:#4a6a8a;font-family:monospace;font-size:11px">⟳ Claude analysis will appear here when workflow runs. Manually trigger the n8n workflow to update.</p>
-    </div>
   </div>
 
   <div class="panel-lg" style="margin-bottom:20px">
@@ -1352,182 +1337,20 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); min-hei
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════
-// LIVE DATA LAYER — injected by n8n every Sunday 9am
-// To use manually: edit the values below and reload
-// ═══════════════════════════════════════════════════════════════════
-const LIVE = {
-  reportDate: "%%REPORT_DATE%%",
-  btcPrice:   %%BTC_PRICE%%,
-  solPrice:   %%SOL_PRICE%%,
-  ethPrice:   %%ETH_PRICE%%,
-  fearGreed:  %%FEAR_GREED%%,
-  fearLabel:  "%%FEAR_LABEL%%",
-  fedRate:    "%%FED_RATE%%",
-  btcHashRate:"%%BTC_HASH_RATE%%",
-  claudeAnalysis: `%%CLAUDE_ANALYSIS%%`
-};
-
-// ── Balances & cost basis ──────────────────────────────────────────
-const BAL  = { btc: 0.164, sol: 75.2, eth: 1.78 };
-const COST = { btc: 20000, sol: 10000, eth: 5000 };
-
-// ── Derived calculations ───────────────────────────────────────────
-const btcVal   = LIVE.btcPrice * BAL.btc;
-const solVal   = LIVE.solPrice * BAL.sol;
-const ethVal   = LIVE.ethPrice * BAL.eth;
-const totalVal = btcVal + solVal + ethVal;
-const totalCost = 35000;
-const totalPnl  = totalVal - totalCost;
-const totalPnlPct = ((totalPnl / totalCost) * 100).toFixed(1);
-
-const btcPnl    = btcVal - COST.btc;
-const solPnl    = solVal - COST.sol;
-const ethPnl    = ethVal - COST.eth;
-const btcPnlPct = ((btcPnl / COST.btc) * 100).toFixed(1);
-const solPnlPct = ((solPnl / COST.sol) * 100).toFixed(1);
-const ethPnlPct = ((ethPnl / COST.eth) * 100).toFixed(1);
-
-const btcAlloc = ((btcVal / totalVal) * 100).toFixed(1);
-const solAlloc = ((solVal / totalVal) * 100).toFixed(1);
-const ethAlloc = ((ethVal / totalVal) * 100).toFixed(1);
-
-// Breakeven prices
-const btcBE = (COST.btc / BAL.btc).toFixed(0);   // $121,951
-const solBE = (COST.sol / BAL.sol).toFixed(2);    // $133.00
-const ethBE = (COST.eth / BAL.eth).toFixed(0);    // $2,809
-
-// Scenario projections
-const bearVal = (67000*BAL.btc + 60*BAL.sol + 1400*BAL.eth);
-const baseVal = (88000*BAL.btc + 175*BAL.sol + 3200*BAL.eth);
-const bullVal = (110000*BAL.btc + 250*BAL.sol + 4500*BAL.eth);
-
-const fmt = (n, dec=0) => '$' + n.toLocaleString('en-US', {maximumFractionDigits: dec, minimumFractionDigits: dec});
-const fmtPct = (n) => (n >= 0 ? '+' : '') + parseFloat(n).toFixed(1) + '%';
-const pnlColor = (n) => parseFloat(n) >= 0 ? '#00e5a0' : '#ff3d6b';
-
-// ── DOM update on load ─────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-
-  // ── Inject live data banner ──
-  const banner = document.createElement('div');
-  banner.id = 'live-banner';
-  banner.innerHTML = `
-    <div style="background:#0a1520;border-bottom:1px solid #182030;padding:8px 24px;display:flex;align-items:center;gap:24px;font-family:monospace;font-size:10px;overflow-x:auto">
-      <span style="color:#00c8ff;letter-spacing:2px;flex-shrink:0">⚡ LIVE DATA — ${LIVE.reportDate}</span>
-      <span style="color:#F7931A">BTC <strong style="color:#fff">${fmt(LIVE.btcPrice)}</strong></span>
-      <span style="color:#9945FF">SOL <strong style="color:#fff">${fmt(LIVE.solPrice,2)}</strong></span>
-      <span style="color:#627EEA">ETH <strong style="color:#fff">${fmt(LIVE.ethPrice)}</strong></span>
-      <span style="color:#4a6a8a">│</span>
-      <span>Portfolio <strong style="color:${pnlColor(totalPnl)}">${fmt(totalVal)}</strong></span>
-      <span>P&L <strong style="color:${pnlColor(totalPnl)}">${totalPnl>=0?'+':''}${fmt(totalPnl)} (${fmtPct(totalPnlPct)})</strong></span>
-      <span style="color:#4a6a8a">│</span>
-      <span>Fear&Greed <strong style="color:${LIVE.fearGreed < 30 ? '#ff3d6b' : LIVE.fearGreed < 50 ? '#ffc832' : '#00e5a0'}">${LIVE.fearGreed} — ${LIVE.fearLabel}</strong></span>
-      <span>Fed <strong style="color:#ffc832">${LIVE.fedRate}%</strong></span>
-    </div>`;
-  document.body.insertBefore(banner, document.body.firstChild);
-
-  // ── Update Overview KPIs ──
-  setKPI('kpi-total-value',    fmt(totalVal),    `${fmt(totalVal)} across 3 core positions`);
-  setKPI('kpi-var',            fmt(totalVal*0.086,'0'), '8.6% drawdown risk');
-  setKPI('kpi-pnl-pct',        fmtPct(totalPnlPct), `vs ${fmt(totalCost)} invested`);
-  setKPI('kpi-risk-score',     totalPnl < -10000 ? '8.4/10' : totalPnl < 0 ? '6.5/10' : '4.5/10', 'Risk score');
-
-  // ── Update report date headers ──
-  document.querySelectorAll('.live-report-date').forEach(el => el.textContent = LIVE.reportDate);
-
-  // ── Update position table if present ──
-  updatePositions();
-
-  // ── Update McKinsey macro KPIs ──
-  setEl('kpi-fed-rate', LIVE.fedRate + '%');
-  setEl('kpi-fear-greed', String(LIVE.fearGreed));
-  setEl('kpi-fear-label', LIVE.fearLabel);
-
-  // ── Inject Claude AI analysis ──
-  const analysisEl = document.getElementById('claude-analysis-content');
-  if (analysisEl && LIVE.claudeAnalysis && !LIVE.claudeAnalysis.includes('%%')) {
-    const formatted = LIVE.claudeAnalysis
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      .replace(/## ([^\n]+)/g, '<h3 style="font-size:11px;color:#00c8ff;margin:18px 0 8px;font-family:monospace;text-transform:uppercase;letter-spacing:2px">$1</h3>')
-      .replace(/\n- /g, '<br>• ')
-      .replace(/\n\n/g, '</p><p style="margin:8px 0">')
-      .replace(/\n/g, '<br>');
-    analysisEl.innerHTML = '<p>' + formatted + '</p>';
-  }
-
-  // ── Update scenario projections ──
-  setEl('scenario-bear-val', fmt(bearVal));
-  setEl('scenario-bear-pnl', (bearVal-totalCost>=0?'+':'') + fmt(bearVal-totalCost));
-  setEl('scenario-base-val', fmt(baseVal));
-  setEl('scenario-base-pnl', (baseVal-totalCost>=0?'+':'') + fmt(baseVal-totalCost));
-  setEl('scenario-bull-val', fmt(bullVal));
-  setEl('scenario-bull-pnl', (bullVal-totalCost>=0?'+':'') + fmt(bullVal-totalCost));
-
-  // ── Update breakeven section ──
-  setEl('be-btc-current', fmt(LIVE.btcPrice));
-  setEl('be-btc-gap', '+' + ((btcBE - LIVE.btcPrice)/LIVE.btcPrice*100).toFixed(1) + '% to breakeven');
-  setEl('be-sol-current', fmt(LIVE.solPrice,2));
-  setEl('be-sol-gap', LIVE.solPrice >= parseFloat(solBE) ? '✓ AT BREAKEVEN' : '+' + ((solBE - LIVE.solPrice)/LIVE.solPrice*100).toFixed(1) + '% needed');
-  setEl('be-eth-current', fmt(LIVE.ethPrice));
-  setEl('be-eth-gap', '+' + ((ethBE - LIVE.ethPrice)/LIVE.ethPrice*100).toFixed(1) + '% to breakeven');
-
-  // ── Update recovery target ──
-  const recoveryNeeded = totalPnl < 0 ? Math.abs((totalPnl/totalVal)*100).toFixed(1) + '%' : 'IN PROFIT';
-  setEl('kpi-recovery', recoveryNeeded);
-});
-
-function setEl(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-function setKPI(id, value, sub) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const valEl = el.querySelector('.kpi-value');
-  const subEl = el.querySelector('.kpi-sub');
-  if (valEl) valEl.textContent = value;
-  if (subEl && sub) subEl.textContent = sub;
-}
-
-function updatePositions() {
-  const positions = [
-    { id: 'pos-btc', ticker:'BTC', color:'#F7931A', price: LIVE.btcPrice, bal: BAL.btc, val: btcVal, pnl: btcPnl, pnlPct: btcPnlPct, alloc: btcAlloc, be: btcBE, cost: COST.btc },
-    { id: 'pos-sol', ticker:'SOL', color:'#9945FF', price: LIVE.solPrice, bal: BAL.sol, val: solVal, pnl: solPnl, pnlPct: solPnlPct, alloc: solAlloc, be: solBE, cost: COST.sol },
-    { id: 'pos-eth', ticker:'ETH', color:'#627EEA', price: LIVE.ethPrice, bal: BAL.eth, val: ethVal, pnl: ethPnl, pnlPct: ethPnlPct, alloc: ethAlloc, be: ethBE, cost: COST.eth },
-  ];
-  positions.forEach(p => {
-    const el = document.getElementById(p.id);
-    if (!el) return;
-    const s = (n) => parseFloat(n) >= 0 ? '#00e5a0' : '#ff3d6b';
-    el.innerHTML = `
-      <div style="border-top:2px solid ${p.color};border-radius:10px;background:#0a0f1a;border:1px solid #182030;padding:20px;position:relative">
-        <div style="font-size:22px;font-weight:700;letter-spacing:2px;color:${p.color};margin-bottom:2px">${p.ticker}</div>
-        <div style="font-family:monospace;font-size:9px;color:#4a6a8a;text-transform:uppercase;margin-bottom:14px">${p.bal} coins</div>
-        <div style="font-size:26px;font-weight:700;margin-bottom:8px">${fmt(p.price,2)}</div>
-        <div style="display:flex;justify-content:space-between;font-family:monospace;font-size:10px;color:#4a6a8a;border-top:1px solid #182030;padding-top:8px;margin-bottom:4px">
-          <span>Value: <strong style="color:#fff">${fmt(p.val,2)}</strong></span>
-          <span style="color:${s(p.pnlPct)}">${fmtPct(p.pnlPct)}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-family:monospace;font-size:10px;color:#4a6a8a;border-top:1px solid #182030;padding-top:6px;margin-bottom:4px">
-          <span>P&L: <strong style="color:${s(p.pnl)}">${p.pnl>=0?'+':''}${fmt(p.pnl,0)}</strong></span>
-          <span>Alloc: ${p.alloc}%</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-family:monospace;font-size:10px;color:#4a6a8a;border-top:1px solid #182030;padding-top:6px">
-          <span>Cost: ${fmt(p.cost)}</span>
-          <span style="color:#ffc832">BE: ${fmt(p.be,2)}</span>
-        </div>
-      </div>`;
-  });
-}
-
 function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
+  const page = document.getElementById('page-' + id);
+  if(page) page.classList.add('active');
   if(el) el.classList.add('active');
-}
+  else {
+    // fallback: find the tab by matching onclick
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      if(t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + id + "'")) {
+        t.classList.add('active');
+      }
+    });
+  }
 }
 </script>
 </body>
