@@ -1,1357 +1,358 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Institutional Portfolio Engine</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #05080f;
-  --surface: #0a0f1a;
-  --surface2: #0f1825;
-  --border: #182030;
-  --border2: #1e2d45;
-  --accent: #00c8ff;
-  --accent2: #ff3d6b;
-  --accent3: #ffc832;
-  --accent4: #00e5a0;
-  --accent5: #a855f7;
-  --text: #dde8f5;
-  --muted: #4a6a8a;
-  --mono: 'DM Mono', monospace;
-  --sans: 'DM Sans', sans-serif;
-  --display: 'Bebas Neue', sans-serif;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:var(--bg); color:var(--text); font-family:var(--sans); min-height:100vh;
-  background-image: radial-gradient(ellipse at 0% 0%, rgba(0,200,255,0.03) 0%, transparent 60%),
-    radial-gradient(ellipse at 100% 100%, rgba(168,85,247,0.03) 0%, transparent 60%); }
-
-/* NAV */
-.nav { display:flex; align-items:center; gap:0; border-bottom:1px solid var(--border); overflow-x:auto; padding:0 24px; background:var(--surface); position:sticky; top:0; z-index:100; }
-.nav-brand { font-family:var(--display); font-size:20px; letter-spacing:2px; color:var(--accent); padding:14px 20px 14px 0; border-right:1px solid var(--border); margin-right:4px; white-space:nowrap; flex-shrink:0; }
-.nav-tab { font-family:var(--mono); font-size:10px; padding:14px 14px; color:var(--muted); cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent; transition:all .2s; flex-shrink:0; }
-.nav-tab:hover { color:var(--text); }
-.nav-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
-
-/* PAGES */
-.page { display:none; padding:28px 24px; max-width:1400px; margin:0 auto; animation: fadeIn .3s ease; }
-.page.active { display:block; }
-@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-
-/* PAGE HEADER */
-.page-header { margin-bottom:28px; }
-.page-header .firm-tag { font-family:var(--mono); font-size:10px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; }
-.page-header h2 { font-family:var(--display); font-size:36px; letter-spacing:2px; line-height:1; margin-bottom:8px; }
-.page-header p { font-size:13px; color:var(--muted); max-width:700px; line-height:1.6; }
-
-/* GRID HELPERS */
-.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
-.grid-4 { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px; }
-
-/* PANELS */
-.panel { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; }
-.panel-lg { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:24px; }
-.panel-title { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--muted); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
-.panel-title::after { content:''; flex:1; height:1px; background:var(--border); }
-
-/* KPI CARDS */
-.kpi { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px; position:relative; overflow:hidden; }
-.kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
-.kpi.blue::before { background:var(--accent); }
-.kpi.red::before { background:var(--accent2); }
-.kpi.yellow::before { background:var(--accent3); }
-.kpi.green::before { background:var(--accent4); }
-.kpi.purple::before { background:var(--accent5); }
-.kpi-label { font-family:var(--mono); font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; }
-.kpi-value { font-family:var(--display); font-size:32px; letter-spacing:1px; line-height:1; }
-.kpi-value.blue { color:var(--accent); }
-.kpi-value.red { color:var(--accent2); }
-.kpi-value.yellow { color:var(--accent3); }
-.kpi-value.green { color:var(--accent4); }
-.kpi-value.purple { color:var(--accent5); }
-.kpi-sub { font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:6px; }
-
-/* TABLE */
-.data-table { width:100%; border-collapse:collapse; }
-.data-table th { font-family:var(--mono); font-size:9px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); }
-.data-table td { padding:10px 10px; font-size:12px; border-bottom:1px solid rgba(24,32,48,0.7); vertical-align:middle; }
-.data-table tr:last-child td { border-bottom:none; }
-.data-table tr:hover td { background:rgba(255,255,255,0.015); }
-.mono-val { font-family:var(--mono); }
-.up { color:var(--accent4); font-family:var(--mono); font-weight:500; }
-.down { color:var(--accent2); font-family:var(--mono); font-weight:500; }
-.neutral-val { color:var(--accent3); font-family:var(--mono); }
-
-/* RATING PILLS */
-.pill { display:inline-block; font-family:var(--mono); font-size:9px; font-weight:500; padding:3px 8px; border-radius:3px; }
-.pill-BUY { background:rgba(0,229,160,0.15); color:var(--accent4); border:1px solid rgba(0,229,160,0.25); }
-.pill-HOLD { background:rgba(255,200,50,0.12); color:var(--accent3); border:1px solid rgba(255,200,50,0.2); }
-.pill-SELL { background:rgba(255,61,107,0.15); color:var(--accent2); border:1px solid rgba(255,61,107,0.25); }
-.pill-STRONG-BUY { background:rgba(0,229,160,0.25); color:#00ff99; border:1px solid rgba(0,255,153,0.4); }
-.pill-AVOID { background:rgba(255,61,107,0.25); color:#ff1a4f; border:1px solid rgba(255,26,79,0.4); }
-.pill-HIGH { background:rgba(255,61,107,0.12); color:var(--accent2); border:1px solid rgba(255,61,107,0.2); }
-.pill-MED { background:rgba(255,200,50,0.1); color:var(--accent3); border:1px solid rgba(255,200,50,0.15); }
-.pill-LOW { background:rgba(0,229,160,0.1); color:var(--accent4); border:1px solid rgba(0,229,160,0.15); }
-.pill-CRITICAL { background:rgba(255,61,107,0.2); color:#ff1a4f; border:1px solid rgba(255,61,107,0.3); }
-
-/* BARS */
-.bar-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-.bar-name { font-family:var(--mono); font-size:10px; width:80px; text-align:right; flex-shrink:0; color:var(--text); }
-.bar-track { flex:1; height:20px; background:var(--border); border-radius:3px; overflow:hidden; }
-.bar-fill { height:100%; border-radius:3px; display:flex; align-items:center; padding:0 8px; }
-.bar-pct { font-family:var(--mono); font-size:9px; font-weight:500; color:rgba(0,0,0,0.85); }
-
-/* METER */
-.meter-row { margin-bottom:14px; }
-.meter-header { display:flex; justify-content:space-between; font-size:11px; margin-bottom:5px; }
-.meter-track { height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
-.meter-fill { height:100%; border-radius:3px; }
-
-/* ALERT */
-.alert { border-radius:8px; padding:14px 16px; margin-bottom:12px; }
-.alert-title { font-family:var(--mono); font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
-.alert-body { font-size:12px; line-height:1.6; color:rgba(221,232,245,0.75); }
-.alert.red { background:rgba(255,61,107,0.06); border:1px solid rgba(255,61,107,0.18); }
-.alert.red .alert-title { color:var(--accent2); }
-.alert.yellow { background:rgba(255,200,50,0.05); border:1px solid rgba(255,200,50,0.18); }
-.alert.yellow .alert-title { color:var(--accent3); }
-.alert.green { background:rgba(0,229,160,0.05); border:1px solid rgba(0,229,160,0.18); }
-.alert.green .alert-title { color:var(--accent4); }
-.alert.blue { background:rgba(0,200,255,0.05); border:1px solid rgba(0,200,255,0.18); }
-.alert.blue .alert-title { color:var(--accent); }
-.alert.purple { background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.18); }
-.alert.purple .alert-title { color:var(--accent5); }
-
-/* SCENARIO */
-.scenario-card { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:10px; }
-.scenario-name { font-weight:600; font-size:13px; margin-bottom:4px; }
-.scenario-trigger { font-family:var(--mono); font-size:10px; color:var(--muted); margin-bottom:8px; }
-.scenario-stats { display:flex; gap:16px; flex-wrap:wrap; }
-.scenario-stat { display:flex; flex-direction:column; gap:2px; }
-.scenario-stat-label { font-family:var(--mono); font-size:9px; color:var(--muted); }
-.scenario-stat-val { font-family:var(--mono); font-size:13px; font-weight:500; }
-
-/* TIMELINE */
-.timeline { display:flex; flex-direction:column; gap:0; }
-.tl-item { display:flex; gap:16px; padding-bottom:20px; position:relative; }
-.tl-item:not(:last-child)::before { content:''; position:absolute; left:7px; top:16px; bottom:0; width:1px; background:var(--border); }
-.tl-dot { width:16px; height:16px; border-radius:50%; flex-shrink:0; margin-top:2px; border:2px solid; }
-.tl-dot.now { border-color:var(--accent2); background:rgba(255,61,107,0.3); }
-.tl-dot.near { border-color:var(--accent3); background:rgba(255,200,50,0.2); }
-.tl-dot.mid { border-color:var(--accent); background:rgba(0,200,255,0.15); }
-.tl-dot.far { border-color:var(--accent4); background:rgba(0,229,160,0.1); }
-.tl-date { font-family:var(--mono); font-size:10px; color:var(--muted); margin-bottom:3px; }
-.tl-title { font-size:13px; font-weight:600; margin-bottom:3px; }
-.tl-body { font-size:11px; color:rgba(221,232,245,0.65); line-height:1.6; }
-
-/* ACTION ITEM */
-.action-item { display:flex; gap:14px; padding:12px 0; border-bottom:1px solid var(--border); align-items:flex-start; }
-.action-item:last-child { border-bottom:none; }
-.action-num { font-family:var(--display); font-size:28px; color:var(--border2); flex-shrink:0; line-height:1; margin-top:-2px; }
-.action-content { flex:1; }
-.action-title { font-size:13px; font-weight:600; margin-bottom:4px; }
-.action-body { font-size:11px; color:rgba(221,232,245,0.65); line-height:1.6; }
-.action-tag { display:inline-block; font-family:var(--mono); font-size:9px; padding:2px 7px; border-radius:3px; margin-top:6px; }
-.action-tag.urgent { background:rgba(255,61,107,0.15); color:var(--accent2); border:1px solid rgba(255,61,107,0.25); }
-.action-tag.watch { background:rgba(255,200,50,0.1); color:var(--accent3); border:1px solid rgba(255,200,50,0.2); }
-.action-tag.hold { background:rgba(0,200,255,0.08); color:var(--accent); border:1px solid rgba(0,200,255,0.18); }
-.action-tag.opportunity { background:rgba(0,229,160,0.08); color:var(--accent4); border:1px solid rgba(0,229,160,0.18); }
-
-/* DIVIDER */
-.divider { height:1px; background:var(--border); margin:20px 0; }
-
-/* SIGNAL */
-.signal-box { text-align:center; padding:20px; border-radius:10px; }
-.signal-label { font-family:var(--mono); font-size:10px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:1.5px; }
-.signal-val { font-family:var(--display); font-size:48px; letter-spacing:2px; }
-
-/* HEATMAP */
-.heatmap { display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; }
-.heat-cell { padding:10px 6px; border-radius:5px; text-align:center; }
-.heat-label { font-family:var(--mono); font-size:9px; margin-bottom:4px; }
-.heat-val { font-family:var(--mono); font-size:11px; font-weight:500; }
-.heat-1 { background:rgba(255,61,107,0.25); color:var(--accent2); }
-.heat-2 { background:rgba(255,61,107,0.15); color:var(--accent2); }
-.heat-3 { background:rgba(255,200,50,0.15); color:var(--accent3); }
-.heat-4 { background:rgba(0,229,160,0.1); color:var(--accent4); }
-.heat-5 { background:rgba(0,229,160,0.2); color:var(--accent4); }
-
-/* RESPONSIVE */
-@media(max-width:768px) {
-  .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; }
-  .heatmap { grid-template-columns:repeat(3,1fr); }
-  .nav-brand { display:none; }
-}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#05080f;color:#dde8f5;font-family:'Segoe UI',Arial,sans-serif;max-width:900px;margin:0 auto}
+  .header{background:linear-gradient(135deg,#0a0f1a,#0f1825);border-bottom:2px solid #00c8ff;padding:32px 40px;position:relative}
+  .header-brand{font-size:10px;letter-spacing:4px;color:#4a6a8a;font-family:monospace;margin-bottom:6px}
+  .header-title{font-size:30px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+  .header-sub{font-size:11px;color:#4a6a8a;font-family:monospace}
+  .header-date{position:absolute;top:32px;right:40px;font-family:monospace;font-size:10px;color:#00c8ff;text-align:right;line-height:1.8}
+  .body{padding:32px 40px;background:#05080f}
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+  .kpi{background:#0a0f1a;border:1px solid #182030;border-radius:10px;padding:16px;position:relative;overflow:hidden}
+  .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+  .kpi.blue::before{background:#00c8ff}.kpi.red::before{background:#ff3d6b}.kpi.yellow::before{background:#ffc832}.kpi.green::before{background:#00e5a0}.kpi.orange::before{background:#F7931A}.kpi.purple::before{background:#9945FF}
+  .kpi-label{font-family:monospace;font-size:9px;color:#4a6a8a;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  .kpi-value{font-size:22px;font-weight:700;line-height:1;margin-bottom:3px}
+  .kpi-sub{font-family:monospace;font-size:9px;color:#4a6a8a}
+  .section-title{font-family:monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#4a6a8a;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #182030}
+  .pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+  .pos-card{background:#0a0f1a;border:1px solid #182030;border-radius:10px;padding:18px}
+  .pos-ticker{font-size:20px;font-weight:700;letter-spacing:2px;margin-bottom:2px}
+  .pos-name{font-family:monospace;font-size:9px;color:#4a6a8a;text-transform:uppercase;margin-bottom:12px}
+  .pos-price{font-size:22px;font-weight:700;margin-bottom:8px}
+  .pos-row{display:flex;justify-content:space-between;font-family:monospace;font-size:10px;color:#4a6a8a;border-top:1px solid #182030;padding-top:6px;margin-top:4px}
+  .table-wrap{background:#0a0f1a;border:1px solid #182030;border-radius:10px;overflow:hidden;margin-bottom:24px}
+  table{width:100%;border-collapse:collapse}
+  th{font-family:monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#4a6a8a;text-align:left;padding:10px 14px;border-bottom:1px solid #182030}
+  td{padding:10px 14px;font-size:11px;border-bottom:1px solid rgba(24,32,48,0.5)}
+  tr:last-child td{border-bottom:none}
+  .mono{font-family:monospace}
+  .pill{display:inline-block;font-family:monospace;font-size:9px;padding:3px 8px;border-radius:3px;font-weight:600}
+  .pill-buy{background:rgba(0,229,160,0.15);color:#00e5a0;border:1px solid rgba(0,229,160,0.3)}
+  .pill-hold{background:rgba(255,200,50,0.12);color:#ffc832;border:1px solid rgba(255,200,50,0.25)}
+  .pill-sell{background:rgba(255,61,107,0.15);color:#ff3d6b;border:1px solid rgba(255,61,107,0.3)}
+  .pill-crit{background:rgba(255,61,107,0.25);color:#ff1a4f;border:1px solid rgba(255,61,107,0.4)}
+  .pill-sbuy{background:rgba(0,229,160,0.25);color:#00ff99;border:1px solid rgba(0,255,153,0.4)}
+  .pill-neu{background:rgba(0,200,255,0.1);color:#00c8ff;border:1px solid rgba(0,200,255,0.2)}
+  .sc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+  .sc-card{background:#0a0f1a;border:1px solid #182030;border-radius:8px;padding:14px}
+  .sc-name{font-size:12px;font-weight:700;margin-bottom:4px}
+  .sc-trigger{font-family:monospace;font-size:9px;color:#4a6a8a;margin-bottom:10px}
+  .sc-val{font-family:monospace;font-size:18px;font-weight:700}
+  .sc-sub{font-family:monospace;font-size:10px;color:#4a6a8a;margin-top:4px}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+  .alert{border-radius:8px;padding:14px 16px;margin-bottom:12px}
+  .alert-title{font-family:monospace;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+  .alert-body{font-size:12px;line-height:1.6;color:rgba(221,232,245,0.75)}
+  .al-red{background:rgba(255,61,107,0.06);border:1px solid rgba(255,61,107,0.2)}.al-red .alert-title{color:#ff3d6b}
+  .al-yel{background:rgba(255,200,50,0.05);border:1px solid rgba(255,200,50,0.2)}.al-yel .alert-title{color:#ffc832}
+  .al-grn{background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.2)}.al-grn .alert-title{color:#00e5a0}
+  .al-blu{background:rgba(0,200,255,0.05);border:1px solid rgba(0,200,255,0.2)}.al-blu .alert-title{color:#00c8ff}
+  .al-pur{background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2)}.al-pur .alert-title{color:#a855f7}
+  .ai-box{background:#0a0f1a;border:1px solid rgba(0,200,255,0.2);border-radius:10px;padding:28px;margin-bottom:24px}
+  .ai-meta{font-family:monospace;font-size:9px;color:#4a6a8a;margin-bottom:14px;letter-spacing:2px}
+  .ai-content{font-size:13px;line-height:1.8;color:#c8d8e8}
+  .ai-content p{margin:8px 0}
+  .be-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+  .be-card{background:#0a0f1a;border:1px solid #182030;border-radius:8px;padding:16px}
+  .be-asset{font-family:monospace;font-size:9px;color:#4a6a8a;margin-bottom:6px}
+  .be-price{font-size:20px;font-weight:700;color:#ffc832;margin-bottom:4px;font-family:monospace}
+  .be-current{font-family:monospace;font-size:10px;color:#4a6a8a}
+  .be-gap{font-family:monospace;font-size:11px;margin-top:4px}
+  .action-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #182030;align-items:flex-start}
+  .action-item:last-child{border-bottom:none}
+  .action-num{font-size:28px;font-weight:700;color:#182030;flex-shrink:0;line-height:1;margin-top:-2px;font-family:monospace}
+  .action-title{font-size:12px;font-weight:600;margin-bottom:4px}
+  .action-body{font-size:11px;color:rgba(221,232,245,0.65);line-height:1.6}
+  .action-tag{display:inline-block;font-family:monospace;font-size:9px;padding:2px 7px;border-radius:3px;margin-top:6px}
+  .tag-urgent{background:rgba(255,61,107,0.15);color:#ff3d6b;border:1px solid rgba(255,61,107,0.25)}
+  .tag-watch{background:rgba(255,200,50,0.1);color:#ffc832;border:1px solid rgba(255,200,50,0.2)}
+  .tag-hold{background:rgba(0,200,255,0.08);color:#00c8ff;border:1px solid rgba(0,200,255,0.18)}
+  .footer{background:#0a0f1a;border-top:1px solid #182030;padding:18px 40px;display:flex;justify-content:space-between;align-items:center}
+  .footer-brand{font-family:monospace;font-size:10px;color:#4a6a8a;letter-spacing:2px}
+  .footer-note{font-family:monospace;font-size:9px;color:#2a3a4a}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="nav">
-  <div class="nav-brand">PORTFOLIO ENGINE</div>
-  <div class="nav-tab active" onclick="showPage('overview', this)">OVERVIEW</div>
-  <div class="nav-tab" onclick="showPage('bridgewater', this)">BRIDGEWATER RISK</div>
-  <div class="nav-tab" onclick="showPage('mckinsey', this)">McKINSEY MACRO</div>
-  <div class="nav-tab" onclick="showPage('blackrock', this)">BLACKROCK CONSTRUCT</div>
-  <div class="nav-tab" onclick="showPage('citadel', this)">CITADEL TECHNICAL</div>
-  <div class="nav-tab" onclick="showPage('goldman', this)">GOLDMAN SCREENER</div>
-  <div class="nav-tab" onclick="showPage('jpmorgan', this)">JPM CATALYST</div>
-  <div class="nav-tab" onclick="showPage('renaissance', this)">REN TECH PATTERNS</div>
-  <div class="nav-tab" onclick="showPage('bain', this)">BAIN COMPETITIVE</div>
-  <div class="nav-tab" onclick="showPage('harvard', this)">HARVARD INCOME</div>
-  <div class="nav-tab" onclick="showPage('action', this)">ACTION PLAN</div>
-  <div class="nav-tab" onclick="showPage('redteam', this)" style="color:var(--accent2)">RED TEAM</div>
-  <div class="nav-tab" onclick="showPage('sources', this)">SOURCE INTEL</div>
-  <div class="nav-tab" onclick="showPage('tax', this)" style="color:var(--accent3)">DELOITTE TAX</div>
-  <div class="nav-tab" onclick="showPage('morganstanley', this)">MORGAN STANLEY</div>
-  <div class="nav-tab" onclick="showPage('estate', this)" style="color:var(--accent5)">ESTATE PLAN</div>
-  <div class="nav-tab" onclick="showPage('brief', this)" style="color:var(--accent4)">EXEC BRIEF</div>
-</nav>
+<!-- ═══════ HEADER ═══════ -->
+<div class="header">
+  <div class="header-date">WEEKLY REPORT<br>MONDAY, MARCH 9, 2026<br><span style="color:#4a6a8a">AUTO-GENERATED</span></div>
+  <div class="header-brand">ALADDIN FRAMEWORK // CRYPTO ADAPTATION</div>
+  <div class="header-title">Portfolio Intelligence Engine</div>
+  <div class="header-sub">INSTITUTIONAL WEEKLY BRIEFING — 13-FRAMEWORK ANALYSIS // BTC · SOL · ETH</div>
+</div>
 
-<!-- ═══════════════════════════════════════════ OVERVIEW ═══ -->
-<div id="page-overview" class="page active">
-  <div class="page-header">
-    <div class="firm-tag">ALADDIN FRAMEWORK // CRYPTO ADAPTATION</div>
-    <h2>MASTER PORTFOLIO OVERVIEW</h2>
-    <p>Full institutional analysis engine — 13 frameworks activated against your $83,457 crypto portfolio. March 6, 2026.</p>
+<div class="body">
+
+<!-- ═══════ MASTER KPIs ═══════ -->
+<div class="kpi-row">
+  <div class="kpi blue">
+    <div class="kpi-label">Total Portfolio Value</div>
+    <div class="kpi-value" style="color:#00c8ff">$20,800</div>
+    <div class="kpi-sub">3 core positions</div>
   </div>
-
-  <div class="grid-4" style="margin-bottom:20px">
-    <div class="kpi blue"><div class="kpi-label">Total Value</div><div class="kpi-value blue">$83,457</div><div class="kpi-sub">20 positions</div></div>
-    <div class="kpi red"><div class="kpi-label">1-Day VaR (95%)</div><div class="kpi-value red">-$7,200</div><div class="kpi-sub">8.6% drawdown risk</div></div>
-    <div class="kpi yellow"><div class="kpi-label">Illiquid / Locked</div><div class="kpi-value yellow">17.7%</div><div class="kpi-sub">$14,752 staked</div></div>
-    <div class="kpi red"><div class="kpi-label">Overall Risk Score</div><div class="kpi-value red">8.4/10</div><div class="kpi-sub">Extreme risk</div></div>
+  <div class="kpi red">
+    <div class="kpi-label">Unrealized P&amp;L</div>
+    <div class="kpi-value" style="color:#ff3d6b">$-14,200</div>
+    <div class="kpi-sub">-40.6% vs $35,000 invested</div>
   </div>
+  <div class="kpi yellow">
+    <div class="kpi-label">Recovery Needed</div>
+    <div class="kpi-value" style="color:#ffc832">+68.3%</div>
+    <div class="kpi-sub">to break even</div>
+  </div>
+  <div class="kpi red">
+    <div class="kpi-label">Fear &amp; Greed</div>
+    <div class="kpi-value" style="color:#ff3d6b">8</div>
+    <div class="kpi-sub">Extreme Fear</div>
+  </div>
+</div>
 
-  <div class="grid-2" style="margin-bottom:20px">
-    <div class="panel-lg">
-      <div class="panel-title">Framework Signal Summary</div>
-      <table class="data-table">
-        <thead><tr><th>Framework</th><th>Firm</th><th>Signal</th><th>Key Finding</th></tr></thead>
-        <tbody>
-          <tr><td>Risk Analysis</td><td class="mono-val" style="color:var(--muted)">Bridgewater</td><td><span class="pill pill-SELL">REDUCE</span></td><td style="font-size:11px">Concentration critical. 0.87 BTC beta.</td></tr>
-          <tr><td>Macro Overlay</td><td class="mono-val" style="color:var(--muted)">McKinsey</td><td><span class="pill pill-HOLD">NEUTRAL</span></td><td style="font-size:11px">Fed hold Mar 18 (94%). Macro pivot Q3.</td></tr>
-          <tr><td>Portfolio Construct</td><td class="mono-val" style="color:var(--muted)">BlackRock</td><td><span class="pill pill-SELL">RESTRUCTURE</span></td><td style="font-size:11px">Rebalance to BTC/ETH core, trim micro-caps.</td></tr>
-          <tr><td>Technical Analysis</td><td class="mono-val" style="color:var(--muted)">Citadel</td><td><span class="pill pill-HOLD">WAIT</span></td><td style="font-size:11px">BTC below 200D MA. No entry signal yet.</td></tr>
-          <tr><td>Asset Screener</td><td class="mono-val" style="color:var(--muted)">Goldman</td><td><span class="pill pill-BUY">ACCUMULATE</span></td><td style="font-size:11px">BTC + ETH + SOL score highest on fundamentals.</td></tr>
-          <tr><td>Event Catalysts</td><td class="mono-val" style="color:var(--muted)">JPMorgan</td><td><span class="pill pill-HOLD">WATCH</span></td><td style="font-size:11px">FOMC Mar 18 + Clarity Act = binary event.</td></tr>
-          <tr><td>Pattern Analysis</td><td class="mono-val" style="color:var(--muted)">Ren. Tech</td><td><span class="pill pill-BUY">SIGNAL</span></td><td style="font-size:11px">Extreme fear = historically contrarian BUY.</td></tr>
-          <tr><td>Competitive Moats</td><td class="mono-val" style="color:var(--muted)">Bain</td><td><span class="pill pill-SELL">EXIT</span></td><td style="font-size:11px">RSC, VPAY, ZORA have no durable moat.</td></tr>
-          <tr><td>Income Strategy</td><td class="mono-val" style="color:var(--muted)">Harvard</td><td><span class="pill pill-BUY">STAKE</span></td><td style="font-size:11px">SOL/AVAX staking yields 6-8% APY. Keep.</td></tr>
-          <tr><td>Tax Optimization</td><td class="mono-val" style="color:var(--muted)">Deloitte</td><td><span class="pill pill-SELL">ACT NOW</span></td><td style="font-size:11px">Harvest losses on exits. No wash-sale rule advantage.</td></tr>
-          <tr><td>Portfolio Architecture</td><td class="mono-val" style="color:var(--muted)">Morgan Stanley</td><td><span class="pill pill-SELL">RESTRUCTURE</span></td><td style="font-size:11px">Core bucket 19% vs 45% target. Exit list = 35%.</td></tr>
-          <tr><td>Estate / Succession</td><td class="mono-val" style="color:var(--muted)">Edward Jones</td><td><span class="pill pill-HOLD">CRITICAL GAP</span></td><td style="font-size:11px">No digital asset succession plan in place. $14,752 staked assets at risk.</td></tr>
-        </tbody>
-      </table>
+<!-- ═══════ POSITION CARDS ═══════ -->
+<div class="section-title">Live Position Summary — Monday, March 9, 2026</div>
+<div class="pos-grid">
+  <div class="pos-card" style="border-top:2px solid #F7931A">
+    <div class="pos-ticker" style="color:#F7931A">BTC</div>
+    <div class="pos-name">Bitcoin // 0.164 coins</div>
+    <div class="pos-price" style="color:#fff">$67,127</div>
+    <div class="pos-row"><span>Value: <strong style="color:#fff">$11,008.83</strong></span><span style="color:#ff3d6b">-45.0%</span></div>
+    <div class="pos-row"><span>P&amp;L: <strong style="color:#ff3d6b">$-8,991</strong></span><span>Alloc: 52.9%</span></div>
+    <div class="pos-row"><span>Cost: $20,000</span><span style="color:#ffc832">BE: $121,951</span></div>
+  </div>
+  <div class="pos-card" style="border-top:2px solid #9945FF">
+    <div class="pos-ticker" style="color:#9945FF">SOL</div>
+    <div class="pos-name">Solana // 75.2 coins</div>
+    <div class="pos-price" style="color:#fff">$83.39</div>
+    <div class="pos-row"><span>Value: <strong style="color:#fff">$6,270.93</strong></span><span style="color:#ff3d6b">-37.3%</span></div>
+    <div class="pos-row"><span>P&amp;L: <strong style="color:#ff3d6b">$-3,729</strong></span><span>Alloc: 30.1%</span></div>
+    <div class="pos-row"><span>Cost: $10,000</span><span style="color:#ffc832">BE: $133.00</span></div>
+  </div>
+  <div class="pos-card" style="border-top:2px solid #627EEA">
+    <div class="pos-ticker" style="color:#627EEA">ETH</div>
+    <div class="pos-name">Ethereum // 1.78 coins</div>
+    <div class="pos-price" style="color:#fff">$1,978</div>
+    <div class="pos-row"><span>Value: <strong style="color:#fff">$3,520.72</strong></span><span style="color:#ff3d6b">-29.6%</span></div>
+    <div class="pos-row"><span>P&amp;L: <strong style="color:#ff3d6b">$-1,479</strong></span><span>Alloc: 16.9%</span></div>
+    <div class="pos-row"><span>Cost: $5,000</span><span style="color:#ffc832">BE: $2,809</span></div>
+  </div>
+</div>
+
+<!-- ═══════ BREAKEVEN ═══════ -->
+<div class="section-title">Recovery Targets</div>
+<div class="be-grid">
+  <div class="be-card">
+    <div class="be-asset">BTC BREAKEVEN</div>
+    <div class="be-price">$121,951</div>
+    <div class="be-current">Current: $67,127</div>
+    <div class="be-gap" style="color:#ff3d6b">+81.7% needed</div>
+  </div>
+  <div class="be-card">
+    <div class="be-asset">SOL BREAKEVEN</div>
+    <div class="be-price">$133.00</div>
+    <div class="be-current">Current: $83.39</div>
+    <div class="be-gap" style="color:#ff3d6b">+59.5% needed</div>
+  </div>
+  <div class="be-card">
+    <div class="be-asset">ETH BREAKEVEN</div>
+    <div class="be-price">$2,809</div>
+    <div class="be-current">Current: $1,978</div>
+    <div class="be-gap" style="color:#ff3d6b">+42.0% needed</div>
+  </div>
+</div>
+
+<!-- ═══════ 13-FRAMEWORK SIGNALS ═══════ -->
+<div class="section-title">13-Framework Signal Summary</div>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Framework</th><th>Firm</th><th>Signal</th><th>Key Finding</th></tr></thead>
+    <tbody>
+      <tr><td>Risk Analysis</td><td class="mono" style="color:#4a6a8a">Bridgewater</td><td><span class="pill pill-sell">REDUCE</span></td><td>Concentration critical. 0.87 BTC correlation.</td></tr>
+      <tr><td>Macro Overlay</td><td class="mono" style="color:#4a6a8a">McKinsey</td><td><span class="pill pill-hold">NEUTRAL</span></td><td>Fed hold expected. Macro pivot H2 2026.</td></tr>
+      <tr><td>Portfolio Construct</td><td class="mono" style="color:#4a6a8a">BlackRock</td><td><span class="pill pill-sell">RESTRUCTURE</span></td><td>Build BTC/ETH core. Add 10% stablecoin buffer.</td></tr>
+      <tr><td>Technical Analysis</td><td class="mono" style="color:#4a6a8a">Citadel</td><td><span class="pill pill-hold">WAIT</span></td><td>BTC below 200D MA. No entry signal yet.</td></tr>
+      <tr><td>Asset Screener</td><td class="mono" style="color:#4a6a8a">Goldman Sachs</td><td><span class="pill pill-buy">ACCUMULATE</span></td><td>BTC 94/100 · ETH 89/100 · SOL 81/100.</td></tr>
+      <tr><td>Event Catalysts</td><td class="mono" style="color:#4a6a8a">JPMorgan</td><td><span class="pill pill-hold">WATCH</span></td><td>FOMC + Digital Clarity Act = binary events.</td></tr>
+      <tr><td>Pattern Analysis</td><td class="mono" style="color:#4a6a8a">Ren. Tech</td><td><span class="pill pill-buy">SIGNAL</span></td><td>Extreme Fear = historically +42% 90D return.</td></tr>
+      <tr><td>Competitive Moats</td><td class="mono" style="color:#4a6a8a">Bain</td><td><span class="pill pill-buy">HOLD</span></td><td>BTC/ETH/SOL have wide to moderate network moats.</td></tr>
+      <tr><td>Income Strategy</td><td class="mono" style="color:#4a6a8a">Harvard</td><td><span class="pill pill-buy">STAKE</span></td><td>SOL staking 6.8% APY. ETH via Lido 3.5-4.5%.</td></tr>
+      <tr><td>Tax Optimization</td><td class="mono" style="color:#4a6a8a">Deloitte</td><td><span class="pill pill-sell">ACT NOW</span></td><td>Harvest unrealized losses before year end.</td></tr>
+      <tr><td>Portfolio Architecture</td><td class="mono" style="color:#4a6a8a">Morgan Stanley</td><td><span class="pill pill-sell">RESTRUCTURE</span></td><td>Core bucket underweight vs 45% target.</td></tr>
+      <tr><td>Estate Planning</td><td class="mono" style="color:#4a6a8a">Edward Jones</td><td><span class="pill pill-crit">CRITICAL GAP</span></td><td>No digital asset succession plan. Assets at risk.</td></tr>
+      <tr><td>Exec Summary</td><td class="mono" style="color:#4a6a8a">Aladdin AI</td><td><span class="pill pill-neu">DISTRESSED</span></td><td>Portfolio in recovery mode. Hold core. Optimize yield.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════ SCENARIO ANALYSIS ═══════ -->
+<div class="section-title">Scenario Analysis — 90-Day Range</div>
+<div class="sc-grid">
+  <div class="sc-card" style="border-color:rgba(255,61,107,0.3)">
+    <div class="sc-name" style="color:#ff3d6b">🐻 Bear Case</div>
+    <div class="sc-trigger">BTC $67K · SOL $60 · ETH $1,400</div>
+    <div class="sc-val" style="color:#ff3d6b">$17,992</div>
+    <div class="sc-sub">P&amp;L vs Cost: $-17,008</div>
+  </div>
+  <div class="sc-card" style="border-color:rgba(255,200,50,0.3)">
+    <div class="sc-name" style="color:#ffc832">📊 Base Case</div>
+    <div class="sc-trigger">BTC $88K · SOL $175 · ETH $3,200</div>
+    <div class="sc-val" style="color:#ffc832">$33,288</div>
+    <div class="sc-sub">P&amp;L vs Cost: +$-1,712</div>
+  </div>
+  <div class="sc-card" style="border-color:rgba(0,229,160,0.3)">
+    <div class="sc-name" style="color:#00e5a0">🚀 Bull Case</div>
+    <div class="sc-trigger">BTC $110K · SOL $250 · ETH $4,500</div>
+    <div class="sc-val" style="color:#00e5a0">$44,850</div>
+    <div class="sc-sub">P&amp;L vs Cost: +$9,850</div>
+  </div>
+</div>
+
+<!-- ═══════ RISKS & OPPORTUNITIES ═══════ -->
+<div class="two-col">
+  <div>
+    <div class="section-title">Top Risks This Week</div>
+    <div class="alert al-red">
+      <div class="alert-title">⚡ BTC Concentration</div>
+      <div class="alert-body">BTC at 52.9% of portfolio. Single-asset dominance amplifies downside. Institutional max is 30% per position.</div>
     </div>
-    <div class="panel-lg">
-      <div class="panel-title">Portfolio Heat Map — Risk by Asset</div>
-      <div class="heatmap">
-        <div class="heat-cell heat-3"><div class="heat-label">BTC</div><div class="heat-val">MED</div></div>
-        <div class="heat-cell heat-1"><div class="heat-label">XRP</div><div class="heat-val">HIGH</div></div>
-        <div class="heat-cell heat-2"><div class="heat-label">SOL🔒</div><div class="heat-val">HIGH</div></div>
-        <div class="heat-cell heat-1"><div class="heat-label">RSC</div><div class="heat-val">CRIT</div></div>
-        <div class="heat-cell heat-2"><div class="heat-label">QNT</div><div class="heat-val">HIGH</div></div>
-        <div class="heat-cell heat-1"><div class="heat-label">VPAY</div><div class="heat-val">CRIT</div></div>
-        <div class="heat-cell heat-2"><div class="heat-label">AMP</div><div class="heat-val">HIGH</div></div>
-        <div class="heat-cell heat-2"><div class="heat-label">AVAX🔒</div><div class="heat-val">HIGH</div></div>
-        <div class="heat-cell heat-1"><div class="heat-label">ZORA</div><div class="heat-val">CRIT</div></div>
-        <div class="heat-cell heat-3"><div class="heat-label">ETH</div><div class="heat-val">MED</div></div>
-        <div class="heat-cell heat-2"><div class="heat-label">HBAR</div><div class="heat-val">HIGH</div></div>
-        <div class="heat-cell heat-1"><div class="heat-label">SHIB</div><div class="heat-val">CRIT</div></div>
-        <div class="heat-cell heat-2"><div class="heat-label">XLM</div><div class="heat-val">HIGH</div></div>
-        <div class="heat-cell heat-3"><div class="heat-label">LINK</div><div class="heat-val">MED</div></div>
-        <div class="heat-cell heat-1"><div class="heat-label">SEI</div><div class="heat-val">CRIT</div></div>
-      </div>
-      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
-        <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">🔒 = staked/locked</span>
-        <span class="pill pill-CRITICAL" style="font-size:9px">CRIT = exit candidate</span>
-        <span class="pill pill-HIGH" style="font-size:9px">HIGH = reduce on strength</span>
-        <span class="pill pill-MED" style="font-size:9px">MED = core hold</span>
-      </div>
+    <div class="alert al-yel">
+      <div class="alert-title">🏦 Macro Sensitivity</div>
+      <div class="alert-body">All three assets move with BTC. 0.87+ correlation means no internal diversification. One macro shock hits everything simultaneously.</div>
+    </div>
+    <div class="alert al-red">
+      <div class="alert-title">📉 Recovery Distance</div>
+      <div class="alert-body">BTC needs +82% to break even. ETH needs +42%. Requires sustained bull momentum.</div>
     </div>
   </div>
-
-  <div class="grid-3">
-    <div class="panel">
-      <div class="panel-title">Scenario Range</div>
-      <div class="scenario-card" style="border-color:rgba(255,61,107,0.25)">
-        <div class="scenario-name" style="color:var(--accent2)">Bear: 2022-Style Crash</div>
-        <div class="scenario-trigger">BTC -65% · Alts -80%</div>
-        <div class="scenario-stats">
-          <div class="scenario-stat"><div class="scenario-stat-label">Portfolio Value</div><div class="scenario-stat-val down">~$16,700</div></div>
-          <div class="scenario-stat"><div class="scenario-stat-label">Loss</div><div class="scenario-stat-val down">-$66,700</div></div>
-        </div>
-      </div>
-      <div class="scenario-card" style="border-color:rgba(255,200,50,0.2)">
-        <div class="scenario-name" style="color:var(--accent3)">Base: CoinShares Base</div>
-        <div class="scenario-trigger">BTC $110-140K · Alts +40%</div>
-        <div class="scenario-stats">
-          <div class="scenario-stat"><div class="scenario-stat-label">Portfolio Value</div><div class="scenario-stat-val neutral-val">~$145,000</div></div>
-          <div class="scenario-stat"><div class="scenario-stat-label">Gain</div><div class="scenario-stat-val up">+$61,500</div></div>
-        </div>
-      </div>
-      <div class="scenario-card" style="border-color:rgba(0,229,160,0.2)">
-        <div class="scenario-name" style="color:var(--accent4)">Bull: Fed Panic Easing</div>
-        <div class="scenario-trigger">BTC $170K · Alts +120%</div>
-        <div class="scenario-stats">
-          <div class="scenario-stat"><div class="scenario-stat-label">Portfolio Value</div><div class="scenario-stat-val up">~$220,000</div></div>
-          <div class="scenario-stat"><div class="scenario-stat-label">Gain</div><div class="scenario-stat-val up">+$136,500</div></div>
-        </div>
-      </div>
+  <div>
+    <div class="section-title">Opportunities</div>
+    <div class="alert al-grn">
+      <div class="alert-title">📊 Extreme Fear = Historical Entry</div>
+      <div class="alert-body">Fear &amp; Greed in extreme territory. Renaissance data: every sub-20 reading over 5 years preceded 90-day BTC gains averaging +42%. You're already positioned.</div>
     </div>
-    <div class="panel">
-      <div class="panel-title">Top 3 Risks Right Now</div>
-      <div class="alert red"><div class="alert-title">⚡ Micro-Cap Illiquidity</div><div class="alert-body">RSC + VPAY + ZORA = $20,108 (24%) in assets with minimal daily volume. In a crash, you cannot exit at screen price. Real liquidation value could be 40-60% lower.</div></div>
-      <div class="alert yellow"><div class="alert-title">🔒 Staking Lockup Timing</div><div class="alert-body">SOL and AVAX unbonding takes 2-7 days. The March 18 FOMC is 12 days away. If Fed surprises hawkish, you need 2 weeks to be fully liquid.</div></div>
-      <div class="alert red"><div class="alert-title">📉 Zero Macro Hedge</div><div class="alert-body">100% crypto with 0.87 BTC correlation. No bonds, no gold, no stablecoins, no cash buffer. A single macro shock hits every position simultaneously.</div></div>
+    <div class="alert al-blu">
+      <div class="alert-title">⚖️ Regulatory Clarity Catalyst</div>
+      <div class="alert-body">Digital Asset Market Clarity Act removes SEC/CFTC ambiguity. Direct catalyst for BTC, ETH, and SOL institutional inflows when passed.</div>
     </div>
-    <div class="panel">
-      <div class="panel-title">Top 3 Opportunities</div>
-      <div class="alert green"><div class="alert-title">📊 Extreme Fear = Historical Entry</div><div class="alert-body">Fear & Greed at 18. Renaissance data shows: every time this index hit 15-20 over the last 5 years, 90-day forward returns averaged +42% for BTC. You're already in — stay positioned.</div></div>
-      <div class="alert blue"><div class="alert-title">⚖️ Clarity Act — March 2026</div><div class="alert-body">If the Digital Asset Market Clarity Act passes, it removes SEC/CFTC ambiguity. XRP, LINK, and HBAR are direct beneficiaries given their legal exposure history.</div></div>
-      <div class="alert purple"><div class="alert-title">🏛️ Institutional Inflows Accelerating</div><div class="alert-body">Grayscale + Coinbase both project rising institutional allocations in 2026. BTC ETF inflows exceeding $50B is bullish for your largest position. Timing is the only question.</div></div>
+    <div class="alert al-grn">
+      <div class="alert-title">🏛️ Post-Halving Cycle</div>
+      <div class="alert-body">2024 halving puts us in the historically bullish 12-24 month window. Institutional ETF inflows accelerating. BTC gains first, then alts.</div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════ BRIDGEWATER ═══ -->
-<div id="page-bridgewater" class="page">
-  <div class="page-header">
-    <div class="firm-tag">FRAMEWORK 3 // BRIDGEWATER ASSOCIATES — RAY DALIO RISK PRINCIPLES</div>
-    <h2>RISK ANALYSIS FRAMEWORK</h2>
-    <p>Adapted from Dalio's "radical transparency" risk model. Traditional: sector/credit/duration risk. Crypto adaptation: correlation, liquidity tier, on-chain health, and tail risk with probability estimates.</p>
-  </div>
-
-  <div class="grid-4" style="margin-bottom:20px">
-    <div class="kpi red"><div class="kpi-label">BTC Correlation</div><div class="kpi-value red">0.87</div><div class="kpi-sub">Portfolio moves with BTC</div></div>
-    <div class="kpi red"><div class="kpi-label">Concentration (Top 4)</div><div class="kpi-value red">72%</div><div class="kpi-sub">BTC+XRP+SOL+RSC</div></div>
-    <div class="kpi yellow"><div class="kpi-label">Locked Capital</div><div class="kpi-value yellow">$14,752</div><div class="kpi-sub">17.7% — cannot exit fast</div></div>
-    <div class="kpi red"><div class="kpi-label">Tail Risk (99% VaR)</div><div class="kpi-value red">-32%</div><div class="kpi-sub">~$26,700 in 1-month</div></div>
-  </div>
-
-  <div class="grid-2" style="margin-bottom:20px">
-    <div class="panel-lg">
-      <div class="panel-title">Correlation Matrix — All Holdings vs BTC</div>
-      <table class="data-table">
-        <thead><tr><th>Asset</th><th>BTC Corr.</th><th>ETH Corr.</th><th>30D Vol</th><th>Risk Tier</th></tr></thead>
-        <tbody>
-          <tr><td>Bitcoin (BTC)</td><td class="mono-val">1.00</td><td class="mono-val">0.82</td><td class="neutral-val">58%</td><td><span class="pill pill-MED">CORE</span></td></tr>
-          <tr><td>Ethereum (ETH)</td><td class="mono-val">0.82</td><td class="mono-val">1.00</td><td class="neutral-val">65%</td><td><span class="pill pill-MED">CORE</span></td></tr>
-          <tr><td>XRP</td><td class="mono-val">0.74</td><td class="mono-val">0.71</td><td class="down">88%</td><td><span class="pill pill-HIGH">HIGH</span></td></tr>
-          <tr><td>Solana (SOL) 🔒</td><td class="mono-val">0.79</td><td class="mono-val">0.76</td><td class="down">92%</td><td><span class="pill pill-HIGH">HIGH</span></td></tr>
-          <tr><td>Avalanche (AVAX) 🔒</td><td class="mono-val">0.81</td><td class="mono-val">0.80</td><td class="down">94%</td><td><span class="pill pill-HIGH">HIGH</span></td></tr>
-          <tr><td>Chainlink (LINK)</td><td class="mono-val">0.77</td><td class="mono-val">0.82</td><td class="down">85%</td><td><span class="pill pill-MED">MED</span></td></tr>
-          <tr><td>Quant (QNT)</td><td class="mono-val">0.68</td><td class="mono-val">0.65</td><td class="down">110%</td><td><span class="pill pill-HIGH">HIGH</span></td></tr>
-          <tr><td>Hedera (HBAR)</td><td class="mono-val">0.72</td><td class="mono-val">0.70</td><td class="down">105%</td><td><span class="pill pill-HIGH">HIGH</span></td></tr>
-          <tr><td>ResearchCoin (RSC)</td><td class="mono-val">0.45</td><td class="mono-val">0.40</td><td class="down">180%</td><td><span class="pill pill-CRITICAL">CRITICAL</span></td></tr>
-          <tr><td>VPay (VPAY)</td><td class="mono-val">0.38</td><td class="mono-val">0.32</td><td class="down">220%</td><td><span class="pill pill-CRITICAL">CRITICAL</span></td></tr>
-          <tr><td>Zora (ZORA)</td><td class="mono-val">0.42</td><td class="mono-val">0.38</td><td class="down">195%</td><td><span class="pill pill-CRITICAL">CRITICAL</span></td></tr>
-          <tr><td>Shiba Inu (SHIB)</td><td class="mono-val">0.71</td><td class="mono-val">0.68</td><td class="down">160%</td><td><span class="pill pill-CRITICAL">CRITICAL</span></td></tr>
-          <tr><td>Stellar (XLM)</td><td class="mono-val">0.73</td><td class="mono-val">0.69</td><td class="down">98%</td><td><span class="pill pill-HIGH">HIGH</span></td></tr>
-          <tr><td>Amp (AMP)</td><td class="mono-val">0.62</td><td class="mono-val">0.59</td><td class="down">130%</td><td><span class="pill pill-HIGH">HIGH</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="panel">
-        <div class="panel-title">Tail Risk Scenarios (Bridgewater Model)</div>
-        <div class="scenario-card">
-          <div class="scenario-name">Scenario A — Liquidity Crunch</div>
-          <div class="scenario-trigger">Probability: 15% · Trigger: Exchange failure or stablecoin depeg</div>
-          <div class="scenario-stats">
-            <div class="scenario-stat"><div class="scenario-stat-label">Expected Loss</div><div class="scenario-stat-val down">-55% ($45,900)</div></div>
-            <div class="scenario-stat"><div class="scenario-stat-label">VPAY/RSC/ZORA</div><div class="scenario-stat-val down">-80%+</div></div>
-          </div>
-        </div>
-        <div class="scenario-card">
-          <div class="scenario-name">Scenario B — Macro Hawkish Shock</div>
-          <div class="scenario-trigger">Probability: 20% · Trigger: Fed signals no cuts in 2026</div>
-          <div class="scenario-stats">
-            <div class="scenario-stat"><div class="scenario-stat-label">Expected Loss</div><div class="scenario-stat-val down">-35% ($29,200)</div></div>
-            <div class="scenario-stat"><div class="scenario-stat-label">BTC Impact</div><div class="scenario-stat-val down">-30%</div></div>
-          </div>
-        </div>
-        <div class="scenario-card">
-          <div class="scenario-name">Scenario C — Regulatory Crackdown</div>
-          <div class="scenario-trigger">Probability: 12% · Trigger: Clarity Act fails, SEC enforcement</div>
-          <div class="scenario-stats">
-            <div class="scenario-stat"><div class="scenario-stat-label">Expected Loss</div><div class="scenario-stat-val down">-40% ($33,400)</div></div>
-            <div class="scenario-stat"><div class="scenario-stat-label">XRP/SOL Impact</div><div class="scenario-stat-val down">-60%+</div></div>
-          </div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="panel-title">Bridgewater Rebalancing Recommendation</div>
-        <div class="bar-row"><div class="bar-name">BTC</div><div class="bar-track"><div class="bar-fill" style="width:30%;background:var(--accent)"><span class="bar-pct">30% target</span></div></div></div>
-        <div class="bar-row"><div class="bar-name">ETH</div><div class="bar-track"><div class="bar-fill" style="width:20%;background:var(--accent)"><span class="bar-pct">20% target</span></div></div></div>
-        <div class="bar-row"><div class="bar-name">SOL+AVAX</div><div class="bar-track"><div class="bar-fill" style="width:20%;background:var(--accent3)"><span class="bar-pct">20% staked</span></div></div></div>
-        <div class="bar-row"><div class="bar-name">Alts (5)</div><div class="bar-track"><div class="bar-fill" style="width:20%;background:var(--accent3)"><span class="bar-pct">20% diversified</span></div></div></div>
-        <div class="bar-row"><div class="bar-name">Stablecoin</div><div class="bar-track"><div class="bar-fill" style="width:10%;background:var(--accent4)"><span class="bar-pct">10% hedge</span></div></div></div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:10px">Current: 0% stablecoin/cash hedge. Bridgewater principle: always hold a volatility buffer.</div>
-      </div>
-    </div>
-  </div>
+<!-- ═══════ CLAUDE AI ANALYSIS ═══════ -->
+<div class="section-title">⚡ Claude AI — Weekly Intelligence Briefing</div>
+<div class="ai-box">
+  <div class="ai-meta">GENERATED BY CLAUDE SONNET 4 // MONDAY, MARCH 9, 2026 // LIVE DATA: COINGECKO · BLOCKCHAIN.INFO · ALTERNATIVE.ME · FRED</div>
+  <div class="ai-content"><p><h3 style="font-size:11px;color:#00c8ff;margin:18px 0 8px;font-family:monospace;text-transform:uppercase;letter-spacing:2px">PORTFOLIO HEALTH ASSESSMENT</h3></p><p style="margin:8px 0">The portfolio is in severe distress with a -40.6% unrealized loss across all major positions, indicating poor entry timing during the previous cycle peak. With the Fear &amp; Greed Index at extreme fear levels (8) and all assets trading 29-45% below breakeven, the portfolio requires immediate risk management intervention to prevent further capital erosion.</p><p style="margin:8px 0"><h3 style="font-size:11px;color:#00c8ff;margin:18px 0 8px;font-family:monospace;text-transform:uppercase;letter-spacing:2px">TOP 2 RISKS THIS WEEK</h3></p><p style="margin:8px 0">1. <strong style="color:#ffffff">Cascading liquidation risk</strong> - BTC approaching critical support around $65,000 could trigger broader altcoin selloffs, potentially pushing SOL below $80 and ETH below $1,900<br>2. <strong style="color:#ffffff">Portfolio concentration in high-beta crypto assets</strong> - 100% allocation to digital assets with no hedging during extreme fear conditions exposes the fund to catastrophic drawdowns if macro conditions deteriorate further</p><p style="margin:8px 0"><h3 style="font-size:11px;color:#00c8ff;margin:18px 0 8px;font-family:monospace;text-transform:uppercase;letter-spacing:2px">SPECIFIC ACTIONS PER ASSET</h3></p><p style="margin:8px 0"><strong style="color:#ffffff">BTC (0.164 BTC):</strong> HOLD with tight stop-loss at $63,500. Scale into additional purchases only if price confirms support above $68,000 with volume. Current positioning near $67K provides reasonable risk/reward given on-chain confirmation at $66,271.</p><p style="margin:8px 0"><strong style="color:#ffffff">SOL (75.2 SOL):</strong> REDUCE position by 30% immediately at current $83 levels. Set hard stop at $78. SOL showing weakest relative strength and highest beta risk in current environment.</p><p style="margin:8px 0"><strong style="color:#ffffff">ETH (1.78 ETH):</strong> HOLD current position. ETH demonstrates strongest relative performance (-29.6% vs BTC's -45%). Consider adding only below $1,850 or above $2,100 breakout.</p><p style="margin:8px 0"><h3 style="font-size:11px;color:#00c8ff;margin:18px 0 8px;font-family:monospace;text-transform:uppercase;letter-spacing:2px">IMMEDIATE PRIORITY</h3></p><p style="margin:8px 0">Reduce portfolio beta exposure by trimming the SOL position this week to preserve capital and create dry powder for strategic re-entry opportunities.</p></div>
 </div>
 
-<!-- ═══════════════════════════════════════════ McKINSEY ═══ -->
-<div id="page-mckinsey" class="page">
-  <div class="page-header">
-    <div class="firm-tag">FRAMEWORK 10 // McKINSEY GLOBAL INSTITUTE — SOVEREIGN WEALTH MACRO</div>
-    <h2>MACRO IMPACT ASSESSMENT</h2>
-    <p>Current macroeconomic conditions and their direct impact on your crypto portfolio. Format: executive strategy briefing with action plan.</p>
-  </div>
-
-  <div class="grid-4" style="margin-bottom:20px">
-    <div class="kpi yellow"><div class="kpi-label">Fed Rate (Current)</div><div class="kpi-value yellow">3.50%</div><div class="kpi-sub">Hold expected Mar 18 (94%)</div></div>
-    <div class="kpi red"><div class="kpi-label">Fear & Greed</div><div class="kpi-value red">18</div><div class="kpi-sub">Extreme Fear</div></div>
-    <div class="kpi yellow"><div class="kpi-label">BTC YTD 2026</div><div class="kpi-value yellow">-17%</div><div class="kpi-sub">From Jan 1 high</div></div>
-    <div class="kpi blue"><div class="kpi-label">BTC Price Target</div><div class="kpi-value blue">$110-140K</div><div class="kpi-sub">CoinShares base case 2026</div></div>
-  </div>
-
-  <div class="grid-2" style="margin-bottom:20px">
-    <div class="panel-lg">
-      <div class="panel-title">10 Macro Factors — Direct Portfolio Impact</div>
-      <table class="data-table">
-        <thead><tr><th>Macro Factor</th><th>Current State</th><th>Portfolio Impact</th><th>Signal</th></tr></thead>
-        <tbody>
-          <tr><td style="font-weight:600">Fed Rate Policy</td><td style="font-size:11px">3.50-3.75% · Hold likely Mar 18</td><td style="font-size:11px">Neutral-negative. No liquidity injection yet.</td><td><span class="pill pill-HOLD">NEUTRAL</span></td></tr>
-          <tr><td style="font-weight:600">Inflation Trend</td><td style="font-size:11px">Tariff pass-through risk in Q1-Q2</td><td style="font-size:11px">Sticky inflation = delayed cuts. Bearish near-term.</td><td><span class="pill pill-SELL">BEARISH</span></td></tr>
-          <tr><td style="font-weight:600">USD Strength</td><td style="font-size:11px">Elevated · Trump trade policy uncertainty</td><td style="font-size:11px">Strong USD pressures BTC short-term but also supports BTC-as-hedge narrative.</td><td><span class="pill pill-HOLD">MIXED</span></td></tr>
-          <tr><td style="font-weight:600">GDP / Growth</td><td style="font-size:11px">Slowing · Coinbase: "cautiously optimistic"</td><td style="font-size:11px">Slow growth limits risk appetite. Crypto performs better in recovery phases.</td><td><span class="pill pill-HOLD">NEUTRAL</span></td></tr>
-          <tr><td style="font-weight:600">Employment Data</td><td style="font-size:11px">Soft labor market developing</td><td style="font-size:11px">Soft jobs = Fed more likely to cut. Bullish for crypto medium-term.</td><td><span class="pill pill-BUY">BULLISH</span></td></tr>
-          <tr><td style="font-weight:600">Fed Chair Transition</td><td style="font-size:11px">Powell out May 2026 · Warsh likely</td><td style="font-size:11px">Warsh is hawkish. New chair = policy uncertainty. Volatility risk.</td><td><span class="pill pill-SELL">BEARISH</span></td></tr>
-          <tr><td style="font-weight:600">Geopolitical Risk</td><td style="font-size:11px">Middle East tensions · Trade wars</td><td style="font-size:11px">Risk-off pressure. BTC increasingly acting as digital gold safe haven.</td><td><span class="pill pill-HOLD">MIXED</span></td></tr>
-          <tr><td style="font-weight:600">Regulatory (US)</td><td style="font-size:11px">Clarity Act · Crypto-friendly admin</td><td style="font-size:11px">XRP/LINK/SOL direct beneficiaries of legal clarity passage.</td><td><span class="pill pill-BUY">BULLISH</span></td></tr>
-          <tr><td style="font-weight:600">Institutional Flow</td><td style="font-size:11px">ETF inflows · DAT expansion</td><td style="font-size:11px">Grayscale + Coinbase: new capital entering. BTC gains first.</td><td><span class="pill pill-BUY">BULLISH</span></td></tr>
-          <tr><td style="font-weight:600">Sector Rotation</td><td style="font-size:11px">Altcoins under pressure vs BTC</td><td style="font-size:11px">38% of alts near cycle lows. Rotation from small-caps to BTC/ETH underway.</td><td><span class="pill pill-SELL">ROTATE</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="panel">
-        <div class="panel-title">Critical Macro Timeline — Next 90 Days</div>
-        <div class="timeline">
-          <div class="tl-item"><div class="tl-dot now"></div><div><div class="tl-date">NOW — March 6, 2026</div><div class="tl-title">Extreme Fear Zone</div><div class="tl-body">Market in Extreme Fear (18). BTC down 17% YTD. Altcoins at cycle lows. Historically a contrarian accumulation zone for BTC/ETH specifically.</div></div></div>
-          <div class="tl-item"><div class="tl-dot near"></div><div><div class="tl-date">March 17-18, 2026</div><div class="tl-title">FOMC Decision — Critical Event</div><div class="tl-body">94% probability of hold at 3.50-3.75%. Tone matters more than decision. Dovish language → BTC +3-5% rally. Hawkish → BTC -5-8%. Position before this event.</div></div></div>
-          <div class="tl-item"><div class="tl-dot near"></div><div><div class="tl-date">May 2026</div><div class="tl-title">Fed Chair Transition</div><div class="tl-body">Powell exits. Warsh leads prediction markets at 60%. Known hawkish. New chair = policy reset risk. Crypto volatility likely spikes around announcement.</div></div></div>
-          <div class="tl-item"><div class="tl-dot mid"></div><div><div class="tl-date">Q2 2026</div><div class="tl-title">Tariff Pass-Through Peak</div><div class="tl-body">Bloomberg: tariff impacts will hit consumer prices and corporate margins in early 2026. If inflation spikes, Fed holds longer. Bearish for risk assets.</div></div></div>
-          <div class="tl-item"><div class="tl-dot far"></div><div><div class="tl-date">H2 2026</div><div class="tl-title">Potential Bull Catalyst Window</div><div class="tl-body">If Fed cuts resume in H2 + Clarity Act passes + institutional flows accelerate → CoinShares base case of BTC $110-140K becomes achievable. Your portfolio triples.</div></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
+<!-- ═══════ CITADEL TRADE LEVELS ═══════ -->
+<div class="section-title">Risk Management — Stop Losses &amp; Targets (Citadel Model)</div>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Asset</th><th>Current</th><th>Stop Loss</th><th>Target 1</th><th>Target 2</th><th>R/R</th></tr></thead>
+    <tbody>
+      <tr>
+        <td style="color:#F7931A;font-weight:700">BTC</td>
+        <td class="mono">$67,127</td>
+        <td class="mono" style="color:#ff3d6b">$67,500</td>
+        <td class="mono" style="color:#ffc832">$88,000</td>
+        <td class="mono" style="color:#00e5a0">$110,000</td>
+        <td class="mono" style="color:#00c8ff">1:-56.0</td>
+      </tr>
+      <tr>
+        <td style="color:#9945FF;font-weight:700">SOL</td>
+        <td class="mono">$83.39</td>
+        <td class="mono" style="color:#ff3d6b">$65</td>
+        <td class="mono" style="color:#ffc832">$175</td>
+        <td class="mono" style="color:#00e5a0">$250</td>
+        <td class="mono" style="color:#00c8ff">1:5.0</td>
+      </tr>
+      <tr>
+        <td style="color:#627EEA;font-weight:700">ETH</td>
+        <td class="mono">$1,978</td>
+        <td class="mono" style="color:#ff3d6b">$1,800</td>
+        <td class="mono" style="color:#ffc832">$3,200</td>
+        <td class="mono" style="color:#00e5a0">$4,500</td>
+        <td class="mono" style="color:#00c8ff">1:6.9</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
-<!-- ═══════════════════════════════════════════ BLACKROCK ═══ -->
-<div id="page-blackrock" class="page">
-  <div class="page-header">
-    <div class="firm-tag">FRAMEWORK 5 // BLACKROCK ALADDIN — PORTFOLIO CONSTRUCTION</div>
-    <h2>PORTFOLIO CONSTRUCTION MODEL</h2>
-    <p>BlackRock-style asset allocation framework. Adapted from Aladdin's portfolio optimization module: core vs satellite, risk budgeting, and rebalancing triggers.</p>
-  </div>
-  <div class="grid-2" style="margin-bottom:20px">
-    <div class="panel-lg">
-      <div class="panel-title">Current vs Recommended Allocation</div>
-      <table class="data-table">
-        <thead><tr><th>Bucket</th><th>Assets</th><th>Current %</th><th>Target %</th><th>Action</th></tr></thead>
-        <tbody>
-          <tr><td style="font-weight:700;color:var(--accent)">CORE L1</td><td style="font-size:11px">BTC + ETH</td><td class="mono-val">19.4%</td><td class="mono-val up">40%</td><td><span class="pill pill-BUY">ADD</span></td></tr>
-          <tr><td style="font-weight:700;color:var(--accent3)">CORE L2</td><td style="font-size:11px">SOL + AVAX (staked)</td><td class="mono-val">17.7%</td><td class="mono-val">20%</td><td><span class="pill pill-HOLD">HOLD</span></td></tr>
-          <tr><td style="font-weight:700;color:var(--accent3)">SATELLITE</td><td style="font-size:11px">XRP, LINK, HBAR, QNT, XLM</td><td class="mono-val">30.0%</td><td class="mono-val down">25%</td><td><span class="pill pill-HOLD">TRIM</span></td></tr>
-          <tr><td style="font-weight:700;color:var(--accent2)">SPECULATIVE</td><td style="font-size:11px">RSC, VPAY, ZORA, AMP, SHIB</td><td class="mono-val">30.4%</td><td class="mono-val down">5%</td><td><span class="pill pill-SELL">REDUCE</span></td></tr>
-          <tr><td style="font-weight:700;color:var(--accent4)">CASH/STABLE</td><td style="font-size:11px">USDC / USDT buffer</td><td class="mono-val up">0%</td><td class="mono-val up">10%</td><td><span class="pill pill-BUY">BUILD</span></td></tr>
-        </tbody>
-      </table>
-      <div class="alert yellow" style="margin-top:16px"><div class="alert-title">Rebalancing Priority</div><div class="alert-body">The single highest-impact action: reduce SPECULATIVE bucket from 30% → 5% and redeploy into BTC/ETH core and a 10% stablecoin buffer. This alone reduces portfolio VaR by ~40%.</div></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="panel">
-        <div class="panel-title">Investment Policy Statement (IPS)</div>
-        <table class="data-table">
-          <tbody>
-            <tr><td style="color:var(--muted);font-size:11px">Portfolio Type</td><td class="mono-val" style="font-size:11px">Aggressive Growth — Crypto</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Benchmark</td><td class="mono-val" style="font-size:11px">BTC 70% / ETH 30% blend</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Target Return</td><td class="mono-val up" style="font-size:11px">+100% over 18 months</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Max Drawdown Tolerance</td><td class="mono-val down" style="font-size:11px">-40% before rebalance</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Tracking Error Target</td><td class="mono-val" style="font-size:11px">&lt;15% vs BTC benchmark</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Rebalance Trigger</td><td class="mono-val" style="font-size:11px">Any position &gt;20% or &lt;2%</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Liquidity Requirement</td><td class="mono-val" style="font-size:11px">≥80% must be exitable in 24h</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Stablecoin Floor</td><td class="mono-val" style="font-size:11px">Minimum 10% at all times</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="panel">
-        <div class="panel-title">DCA Plan — Monthly Addition Strategy</div>
-        <div class="alert blue"><div class="alert-title">BlackRock DCA Principle</div><div class="alert-body">At Fear & Greed = 18, historical data supports systematic accumulation. Suggested: allocate new monthly capital 50% BTC, 30% ETH, 20% stablecoin buffer — not into existing alt positions.</div></div>
-        <div class="alert green"><div class="alert-title">Rebalancing Trigger Rule</div><div class="alert-body">If BTC > 25% of portfolio: trim 5% back to core ETH. If any single micro-cap > 10%: sell half on the next 20%+ rally. Never let RSC/VPAY/ZORA exceed 5% combined.</div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════ CITADEL ═══ -->
-<div id="page-citadel" class="page">
-  <div class="page-header">
-    <div class="firm-tag">FRAMEWORK 6 // CITADEL — QUANTITATIVE TECHNICAL ANALYSIS</div>
-    <h2>TECHNICAL ANALYSIS SYSTEM</h2>
-    <p>Citadel-style quant technical analysis adapted for crypto. Traditional: RSI/MACD/Bollinger on equities. Crypto adaptation: same indicators applied to BTC (portfolio driver), plus on-chain signals as additional technical layers.</p>
-  </div>
-
-  <div class="grid-4" style="margin-bottom:20px">
-    <div class="kpi red"><div class="kpi-label">BTC Trend</div><div class="kpi-value red">BEARISH</div><div class="kpi-sub">Below 200D MA</div></div>
-    <div class="kpi red"><div class="kpi-label">RSI (14D)</div><div class="kpi-value red">28</div><div class="kpi-sub">Oversold territory</div></div>
-    <div class="kpi yellow"><div class="kpi-label">MACD</div><div class="kpi-value yellow">NEG</div><div class="kpi-sub">Bearish crossover active</div></div>
-    <div class="kpi yellow"><div class="kpi-label">Overall Signal</div><div class="kpi-value yellow">WAIT</div><div class="kpi-sub">No entry signal yet</div></div>
-  </div>
-
-  <div class="grid-2" style="margin-bottom:20px">
-    <div class="panel-lg">
-      <div class="panel-title">BTC Technical Report Card — Portfolio Driver</div>
-      <table class="data-table">
-        <thead><tr><th>Indicator</th><th>Reading</th><th>Interpretation</th><th>Signal</th></tr></thead>
-        <tbody>
-          <tr><td>Trend (Daily)</td><td class="mono-val down">Downtrend</td><td style="font-size:11px">BTC making lower highs since Oct 2025 top</td><td><span class="pill pill-SELL">BEARISH</span></td></tr>
-          <tr><td>Trend (Weekly)</td><td class="mono-val neutral-val">Neutral</td><td style="font-size:11px">Weekly structure still above 2024 breakout levels</td><td><span class="pill pill-HOLD">NEUTRAL</span></td></tr>
-          <tr><td>200-Day MA</td><td class="mono-val down">Below</td><td style="font-size:11px">BTC currently below 200D MA — historically bearish</td><td><span class="pill pill-SELL">BEARISH</span></td></tr>
-          <tr><td>50-Day MA</td><td class="mono-val down">Below</td><td style="font-size:11px">Death cross recently formed (50D crossed below 200D)</td><td><span class="pill pill-SELL">BEARISH</span></td></tr>
-          <tr><td>RSI (14-day)</td><td class="mono-val neutral-val">~28</td><td style="font-size:11px">Oversold. Prior bottoms at RSI 20-25 = major buy signals historically.</td><td><span class="pill pill-HOLD">WATCH</span></td></tr>
-          <tr><td>MACD</td><td class="mono-val down">Negative</td><td style="font-size:11px">Bearish crossover. Histogram contracting — potential reversal forming.</td><td><span class="pill pill-HOLD">WATCH</span></td></tr>
-          <tr><td>Bollinger Bands</td><td class="mono-val up">Lower band</td><td style="font-size:11px">Price hugging lower BB. Mean reversion historically likely from here.</td><td><span class="pill pill-BUY">CONTRARIAN</span></td></tr>
-          <tr><td>Volume</td><td class="mono-val down">Declining</td><td style="font-size:11px">Low volume in downtrend = sellers exhausting. Watch for volume spike.</td><td><span class="pill pill-HOLD">WATCH</span></td></tr>
-          <tr><td>Support Level</td><td class="mono-val">$71,000</td><td style="font-size:11px">Key support: $71K (prior ATH from 2024). Hold = bullish. Break = $58K.</td><td><span class="pill pill-HOLD">CRITICAL</span></td></tr>
-          <tr><td>Resistance Level</td><td class="mono-val">$88,000</td><td style="font-size:11px">Prior breakdown level now resistance. Reclaim = trend reversal signal.</td><td><span class="pill pill-BUY">TARGET</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="panel">
-        <div class="panel-title">Citadel Trade Plan — BTC (Portfolio Driver)</div>
-        <table class="data-table">
-          <tbody>
-            <tr><td style="color:var(--muted);font-size:11px">Current Position</td><td class="mono-val up">LONG $12,476</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Entry Zone (Add)</td><td class="mono-val">$71,000 – $74,000</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Stop Loss</td><td class="mono-val down">$67,500 (close below)</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Target 1</td><td class="mono-val up">$88,000 (+20%)</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Target 2</td><td class="mono-val up">$110,000 (+50%)</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Risk/Reward</td><td class="mono-val up">1:3 (favorable)</td></tr>
-            <tr><td style="color:var(--muted);font-size:11px">Confidence Rating</td><td><span class="pill pill-HOLD">WAIT — no entry signal</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="panel">
-        <div class="panel-title">Key Technical Levels — Watch List</div>
-        <div class="alert red"><div class="alert-title">CRITICAL: $71K BTC Support</div><div class="alert-body">If BTC loses $71K on daily close, next major support is $58K. This would trigger ~40% drawdown across your alt positions. This level must hold.</div></div>
-        <div class="alert green"><div class="alert-title">ENTRY TRIGGER: RSI + Volume</div><div class="alert-body">Citadel entry signal: RSI drops to 20-22 AND daily volume spikes 3x average AND BTC holds $71K. This combination historically precedes 30-50% recovery over 60 days.</div></div>
-        <div class="alert blue"><div class="alert-title">FOMC CATALYST: March 18</div><div class="alert-body">Regardless of technicals, FOMC on March 18 is a binary event. Dovish tone → BTC likely breaks above $78K quickly. Hawkish → retest $71K immediately. Position size accordingly.</div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════ GOLDMAN ═══ -->
-<div id="page-goldman" class="page">
-  <div class="page-header">
-    <div class="firm-tag">FRAMEWORK 1 // GOLDMAN SACHS — EQUITY RESEARCH SCREENING</div>
-    <h2>ASSET SCREENING FRAMEWORK</h2>
-    <p>Goldman Sachs equity screener adapted for crypto. Traditional metrics (P/E, revenue growth, moat) replaced with crypto-native equivalents: Network Value/Transaction ratio, developer activity, tokenomics, adoption growth, and institutional grade score.</p>
-  </div>
-
-  <div class="panel-lg" style="margin-bottom:20px">
-    <div class="panel-title">Full Portfolio Screening — Goldman Crypto Score</div>
-    <table class="data-table">
-      <thead><tr><th>Asset</th><th>Network Value Score</th><th>Developer Activity</th><th>Tokenomics</th><th>Institutional Grade</th><th>Adoption Growth</th><th>TOTAL /100</th><th>Rating</th></tr></thead>
-      <tbody>
-        <tr><td style="font-weight:700">Bitcoin (BTC)</td><td class="mono-val up">95</td><td class="mono-val up">88</td><td class="mono-val up">98</td><td class="mono-val up">99</td><td class="mono-val up">90</td><td class="mono-val up" style="font-size:14px;font-weight:700">94</td><td><span class="pill pill-STRONG-BUY">STRONG BUY</span></td></tr>
-        <tr><td style="font-weight:700">Ethereum (ETH)</td><td class="mono-val up">88</td><td class="mono-val up">95</td><td class="mono-val up">82</td><td class="mono-val up">94</td><td class="mono-val up">87</td><td class="mono-val up" style="font-size:14px;font-weight:700">89</td><td><span class="pill pill-STRONG-BUY">STRONG BUY</span></td></tr>
-        <tr><td style="font-weight:700">Solana (SOL)</td><td class="mono-val up">78</td><td class="mono-val up">85</td><td class="mono-val up">74</td><td class="mono-val up">80</td><td class="mono-val up">88</td><td class="mono-val up" style="font-size:14px;font-weight:700">81</td><td><span class="pill pill-BUY">BUY</span></td></tr>
-        <tr><td style="font-weight:700">Chainlink (LINK)</td><td class="mono-val up">72</td><td class="mono-val up">80</td><td class="mono-val neutral-val">68</td><td class="mono-val up">75</td><td class="mono-val up">74</td><td class="mono-val up" style="font-size:14px;font-weight:700">74</td><td><span class="pill pill-BUY">BUY</span></td></tr>
-        <tr><td style="font-weight:700">Avalanche (AVAX)</td><td class="mono-val up">70</td><td class="mono-val up">75</td><td class="mono-val neutral-val">68</td><td class="mono-val neutral-val">65</td><td class="mono-val neutral-val">70</td><td class="mono-val neutral-val" style="font-size:14px;font-weight:700">70</td><td><span class="pill pill-BUY">BUY</span></td></tr>
-        <tr><td style="font-weight:700">XRP</td><td class="mono-val neutral-val">68</td><td class="mono-val neutral-val">60</td><td class="mono-val neutral-val">65</td><td class="mono-val up">78</td><td class="mono-val neutral-val">66</td><td class="mono-val neutral-val" style="font-size:14px;font-weight:700">67</td><td><span class="pill pill-HOLD">HOLD</span></td></tr>
-        <tr><td style="font-weight:700">Hedera (HBAR)</td><td class="mono-val neutral-val">62</td><td class="mono-val neutral-val">65</td><td class="mono-val neutral-val">60</td><td class="mono-val neutral-val">68</td><td class="mono-val neutral-val">62</td><td class="mono-val neutral-val" style="font-size:14px;font-weight:700">63</td><td><span class="pill pill-HOLD">HOLD</span></td></tr>
-        <tr><td style="font-weight:700">Quant (QNT)</td><td class="mono-val neutral-val">58</td><td class="mono-val neutral-val">55</td><td class="mono-val neutral-val">62</td><td class="mono-val neutral-val">60</td><td class="mono-val neutral-val">52</td><td class="mono-val neutral-val" style="font-size:14px;font-weight:700">57</td><td><span class="pill pill-HOLD">HOLD</span></td></tr>
-        <tr><td style="font-weight:700">Stellar (XLM)</td><td class="mono-val neutral-val">55</td><td class="mono-val neutral-val">50</td><td class="mono-val neutral-val">58</td><td class="mono-val neutral-val">55</td><td class="mono-val neutral-val">48</td><td class="mono-val neutral-val" style="font-size:14px;font-weight:700">53</td><td><span class="pill pill-HOLD">HOLD</span></td></tr>
-        <tr><td style="font-weight:700">Amp (AMP)</td><td class="mono-val down">38</td><td class="mono-val down">35</td><td class="mono-val neutral-val">45</td><td class="mono-val down">30</td><td class="mono-val down">32</td><td class="mono-val down" style="font-size:14px;font-weight:700">36</td><td><span class="pill pill-SELL">SELL</span></td></tr>
-        <tr><td style="font-weight:700">Shiba Inu (SHIB)</td><td class="mono-val down">20</td><td class="mono-val down">15</td><td class="mono-val down">18</td><td class="mono-val down">10</td><td class="mono-val down">22</td><td class="mono-val down" style="font-size:14px;font-weight:700">17</td><td><span class="pill pill-AVOID">AVOID</span></td></tr>
-        <tr><td style="font-weight:700">ResearchCoin (RSC)</td><td class="mono-val down">25</td><td class="mono-val down">30</td><td class="mono-val down">20</td><td class="mono-val down">8</td><td class="mono-val down">28</td><td class="mono-val down" style="font-size:14px;font-weight:700">22</td><td><span class="pill pill-AVOID">AVOID</span></td></tr>
-        <tr><td style="font-weight:700">VPay (VPAY)</td><td class="mono-val down">18</td><td class="mono-val down">15</td><td class="mono-val down">20</td><td class="mono-val down">5</td><td class="mono-val down">15</td><td class="mono-val down" style="font-size:14px;font-weight:700">15</td><td><span class="pill pill-AVOID">AVOID</span></td></tr>
-        <tr><td style="font-weight:700">Zora (ZORA)</td><td class="mono-val down">22</td><td class="mono-val down">25</td><td class="mono-val down">18</td><td class="mono-val down">8</td><td class="mono-val down">20</td><td class="mono-val down" style="font-size:14px;font-weight:700">19</td><td><span class="pill pill-AVOID">AVOID</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="alert red"><div class="alert-title">Goldman Screen Summary</div><div class="alert-body">4 of your top 6 positions by value score 80+ (BTC, ETH, SOL, AVAX) — strong fundamentals. However $20,108 (24%) is sitting in AVOID-rated assets (RSC, VPAY, ZORA, SHIB) with Goldman scores below 25. From a pure fundamental screen, these fail every institutional criteria.</div></div>
-</div>
-
-<!-- ═══════════════════════════════════════════ JPMORGAN ═══ -->
-<div id="page-jpmorgan" class="page">
-  <div class="page-header">
-    <div class="firm-tag">FRAMEWORK 4 // JPMORGAN — EVENT-DRIVEN CATALYST ANALYSIS</div>
-    <h2>UPCOMING EVENT CATALYSTS</h2>
-    <p>JPMorgan earnings breakdown adapted for crypto event-driven analysis. Traditional: earnings beats/misses. Crypto adaptation: protocol upgrades, regulatory decisions, macro events, and on-chain milestones as the "earnings" equivalent.</p>
-  </div>
-
-  <div class="grid-3" style="margin-bottom:20px">
-    <div class="panel-lg" style="grid-column:span 2">
-      <div class="panel-title">Upcoming Catalysts — Bull / Bear Cases Per Asset</div>
-      <table class="data-table">
-        <thead><tr><th>Asset</th><th>Next Catalyst</th><th>Bull Case</th><th>Bear Case</th><th>JPM Play</th></tr></thead>
-        <tbody>
-          <tr><td style="font-weight:700">BTC</td><td style="font-size:11px">FOMC Mar 18 · 20M coin mined</td><td class="up" style="font-size:11px">Dovish Fed → $88K+</td><td class="down" style="font-size:11px">Hawkish → $67K retest</td><td><span class="pill pill-HOLD">HOLD — wait FOMC</span></td></tr>
-          <tr><td style="font-weight:700">XRP</td><td style="font-size:11px">Clarity Act passage</td><td class="up" style="font-size:11px">Legal clarity → 3-5x from here</td><td class="down" style="font-size:11px">Act fails → SEC pressure returns</td><td><span class="pill pill-HOLD">HOLD — binary risk</span></td></tr>
-          <tr><td style="font-weight:700">SOL</td><td style="font-size:11px">Alpenglow upgrade (2026)</td><td class="up" style="font-size:11px">Speed upgrade → DeFi activity surge</td><td class="down" style="font-size:11px">Staking lockup = cannot exit fast</td><td><span class="pill pill-HOLD">HOLD STAKED</span></td></tr>
-          <tr><td style="font-weight:700">ETH</td><td style="font-size:11px">Fusaka Hard Fork</td><td class="up" style="font-size:11px">Fork → L2 activity boost, restaking</td><td class="down" style="font-size:11px">Execution failure → ETH underperforms SOL</td><td><span class="pill pill-BUY">ADD on dips</span></td></tr>
-          <tr><td style="font-weight:700">LINK</td><td style="font-size:11px">Clarity Act · DeFi expansion</td><td class="up" style="font-size:11px">Regulated oracle demand explodes</td><td class="down" style="font-size:11px">Smaller allocation limits upside capture</td><td><span class="pill pill-BUY">ADD — underweight</span></td></tr>
-          <tr><td style="font-weight:700">HBAR</td><td style="font-size:11px">Enterprise adoption news</td><td class="up" style="font-size:11px">New Google/IBM partnership announcement</td><td class="down" style="font-size:11px">Centralized governance seen as weakness</td><td><span class="pill pill-HOLD">HOLD small</span></td></tr>
-          <tr><td style="font-weight:700">RSC</td><td style="font-size:11px">No near-term catalyst identified</td><td class="up" style="font-size:11px">Niche science community growth</td><td class="down" style="font-size:11px">No institutional buyers. Liquidity evaporates.</td><td><span class="pill pill-AVOID">EXIT on rally</span></td></tr>
-          <tr><td style="font-weight:700">VPAY</td><td style="font-size:11px">No near-term catalyst identified</td><td class="up" style="font-size:11px">Payment adoption breakthrough</td><td class="down" style="font-size:11px">Competing with Visa/PayPal/Stripe. No moat.</td><td><span class="pill pill-AVOID">EXIT on rally</span></td></tr>
-          <tr><td style="font-weight:700">ZORA</td><td style="font-size:11px">NFT/Creator market recovery</td><td class="up" style="font-size:11px">NFT market revival → platform activity up</td><td class="down" style="font-size:11px">NFT market structurally changed. Low floor.</td><td><span class="pill pill-AVOID">EXIT on rally</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="panel">
-        <div class="panel-title">Binary Event Prep: FOMC March 18</div>
-        <div class="scenario-card">
-          <div class="scenario-name" style="color:var(--accent4)">Scenario: Dovish Hold</div>
-          <div class="scenario-trigger">Fed holds + hints at cuts coming</div>
-          <div class="scenario-stats">
-            <div class="scenario-stat"><div class="scenario-stat-label">BTC</div><div class="scenario-stat-val up">+4-6%</div></div>
-            <div class="scenario-stat"><div class="scenario-stat-label">Portfolio</div><div class="scenario-stat-val up">+$4,500</div></div>
-          </div>
-        </div>
-        <div class="scenario-card">
-          <div class="scenario-name" style="color:var(--accent3)">Scenario: Neutral Hold</div>
-          <div class="scenario-trigger">Fed holds + no signal (expected)</div>
-          <div class="scenario-stats">
-            <div class="scenario-stat"><div class="scenario-stat-label">BTC</div><div class="scenario-stat-val">±2%</div></div>
-            <div class="scenario-stat"><div class="scenario-stat-label">Portfolio</div><div class="scenario-stat-val">±$1,600</div></div>
-          </div>
-        </div>
-        <div class="scenario-card">
-          <div class="scenario-name" style="color:var(--accent2)">Scenario: Hawkish Surprise</div>
-          <div class="scenario-trigger">Fed signals prolonged hold / no 2026 cuts</div>
-          <div class="scenario-stats">
-            <div class="scenario-stat"><div class="scenario-stat-label">BTC</div><div class="scenario-stat-val down">-6-9%</div></div>
-            <div class="scenario-stat"><div class="scenario-stat-label">Portfolio</div><div class="scenario-stat-val down">-$6,500</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════ RENAISSANCE ═══ -->
-<div id="page-renaissance" class="page">
-  <div class="page-header">
-    <div class="firm-tag">FRAMEWORK 9 // RENAISSANCE TECHNOLOGIES — PATTERN DETECTION</div>
-    <h2>STATISTICAL PATTERN ANALYSIS</h2>
-    <p>Ren Tech quantitative pattern detection applied to crypto. Traditional: seasonal equity patterns. Crypto adaptation: fear/greed cycles, BTC halving cycle patterns, altcoin season rotation, and statistical sentiment edges.</p>
-  </div>
-
-  <div class="grid-2" style="margin-bottom:20px">
-    <div class="panel-lg">
-      <div class="panel-title">Historical Pattern Database — Crypto Cycles</div>
-      <table class="data-table">
-        <thead><tr><th>Pattern</th><th>Historical Base</th><th>Current Signal</th><th>90D Forward Return (BTC)</th></tr></thead>
-        <tbody>
-          <tr><td style="font-weight:700">Fear & Greed &lt; 20</td><td style="font-size:11px">8 occurrences since 2020</td><td class="down">Active: F&G = 18</td><td class="up">Avg +42% over 90 days</td></tr>
-          <tr><td style="font-weight:700">Post-Halving Year (2025-26)</td><td style="font-size:11px">2013, 2017, 2021 patterns</td><td class="neutral-val">Active: ~18 months post-halving</td><td class="up">Historically +80-200% peak</td></tr>
-          <tr><td style="font-weight:700">Death Cross (50D/200D)</td><td style="font-size:11px">12 instances since 2015</td><td class="down">Active: formed recently</td><td class="neutral-val">Avg -5% then +28% in 120D</td></tr>
-          <tr><td style="font-weight:700">BTC RSI &lt; 30</td><td style="font-size:11px">15 instances since 2017</td><td class="down">Near-active: RSI ~28</td><td class="up">Avg +35% over 60 days</td></tr>
-          <tr><td style="font-weight:700">Altcoin Season Index &lt; 25</td><td style="font-size:11px">BTC dominance rising phase</td><td class="down">Active: alts at cycle lows</td><td class="neutral-val">BTC leads 4-8 weeks first</td></tr>
-          <tr><td style="font-weight:700">Pre-FOMC Drift</td><td style="font-size:11px">Risk assets tend to drift up 5-7 days before</td><td class="up">12 days to FOMC</td><td class="up">+3-5% avg in week before</td></tr>
-          <tr><td style="font-weight:700">Q1 Crypto Seasonality</td><td style="font-size:11px">Historically weak Jan-Feb, strong Mar-Apr</td><td class="up">March historically +18% avg</td><td class="up">Seasonal tailwind active</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="panel">
-        <div class="panel-title">Ren Tech Statistical Edge Summary</div>
-        <div class="alert green"><div class="alert-title">STRONGEST SIGNAL: Fear & Greed Contrarian</div><div class="alert-body">F&G at 18 is statistically the highest-confidence setup in crypto. Of the 8 times since 2020 that F&G dropped below 20, 7 resulted in positive 90-day returns for BTC averaging +42%. You are already positioned. Do not panic-sell here.</div></div>
-        <div class="alert blue"><div class="alert-title">PATTERN ACTIVE: Post-Halving Cycle</div><div class="alert-body">The 2024 halving puts us in the historically bullish 12-24 month window. Grayscale data shows institutional cycle is displacing the traditional 4-year pattern but the directional bias remains up into H2 2026.</div></div>
-        <div class="alert yellow"><div class="alert-title">WATCH: BTC Leads, Alts Follow</div><div class="alert-body">Renaissance pattern: in every recovery from extreme fear, BTC gains first (4-8 weeks), then ETH, then large-cap alts, then small caps last. Your micro-caps (RSC/VPAY/ZORA) are likely the last to recover — if they recover at all.</div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-title">Probability-Weighted Outcome (Next 90 Days)</div>
-        <div class="bar-row"><div class="bar-name">+30%+</div><div class="bar-track"><div class="bar-fill" style="width:35%;background:var(--accent4)"><span class="bar-pct">35%</span></div></div></div>
-        <div class="bar-row"><div class="bar-name">+10-30%</div><div class="bar-track"><div class="bar-fill" style="width:28%;background:var(--accent)"><span class="bar-pct">28%</span></div></div></div>
-        <div class="bar-row"><div class="bar-name">±10%</div><div class="bar-track"><div class="bar-fill" style="width:20%;background:var(--muted)"><span class="bar-pct">20%</span></div></div></div>
-        <div class="bar-row"><div class="bar-name">-10-30%</div><div class="bar-track"><div class="bar-fill" style="width:12%;background:var(--accent3)"><span class="bar-pct">12%</span></div></div></div>
-        <div class="bar-row"><div class="bar-name">-30%+</div><div class="bar-track"><div class="bar-fill" style="width:5%;background:var(--accent2)"><span class="bar-pct">5%</span></div></div></div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px">Based on historical pattern frequency. Not a guarantee.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════ BAIN ═══ -->
-<div id="page-bain" class="page">
-  <div class="page-header">
-    <div class="firm-tag">FRAMEWORK 8 // BAIN & COMPANY — COMPETITIVE ADVANTAGE ANALYSIS</div>
-    <h2>COMPETITIVE MOAT ANALYSIS</h2>
-    <p>Bain competitive strategy adapted for crypto. Traditional: brand/cost/network/switching moats. Crypto adaptation: protocol network effects, developer ecosystem depth, institutional adoption, and regulatory positioning as moat dimensions.</p>
-  </div>
-
-  <div class="panel-lg" style="margin-bottom:20px">
-    <div class="panel-title">Competitive Moat Scorecard — Your Holdings</div>
-    <table class="data-table">
-      <thead><tr><th>Asset</th><th>Network Effect</th><th>Developer Moat</th><th>Regulatory Moat</th><th>Switching Cost</th><th>Overall Moat</th><th>Verdict</th></tr></thead>
-      <tbody>
-        <tr><td style="font-weight:700">Bitcoin (BTC)</td><td class="up">★★★★★</td><td class="up">★★★★☆</td><td class="up">★★★★★</td><td class="up">★★★★★</td><td class="up" style="font-weight:700">WIDE</td><td><span class="pill pill-STRONG-BUY">IRREPLACEABLE</span></td></tr>
-        <tr><td style="font-weight:700">Ethereum (ETH)</td><td class="up">★★★★★</td><td class="up">★★★★★</td><td class="up">★★★★☆</td><td class="up">★★★★☆</td><td class="up" style="font-weight:700">WIDE</td><td><span class="pill pill-STRONG-BUY">DOMINANT</span></td></tr>
-        <tr><td style="font-weight:700">Solana (SOL)</td><td class="up">★★★★☆</td><td class="up">★★★★☆</td><td class="neutral-val">★★★☆☆</td><td class="up">★★★★☆</td><td class="up" style="font-weight:700">MODERATE+</td><td><span class="pill pill-BUY">KEEP</span></td></tr>
-        <tr><td style="font-weight:700">Chainlink (LINK)</td><td class="up">★★★★☆</td><td class="up">★★★★☆</td><td class="up">★★★★☆</td><td class="up">★★★★★</td><td class="up" style="font-weight:700">WIDE</td><td><span class="pill pill-BUY">UNDERWEIGHTED</span></td></tr>
-        <tr><td style="font-weight:700">XRP</td><td class="neutral-val">★★★☆☆</td><td class="neutral-val">★★★☆☆</td><td class="up">★★★★☆</td><td class="neutral-val">★★★☆☆</td><td class="neutral-val" style="font-weight:700">NARROW</td><td><span class="pill pill-HOLD">REGULATORY PLAY</span></td></tr>
-        <tr><td style="font-weight:700">Avalanche (AVAX)</td><td class="neutral-val">★★★☆☆</td><td class="neutral-val">★★★☆☆</td><td class="neutral-val">★★★☆☆</td><td class="neutral-val">★★★☆☆</td><td class="neutral-val" style="font-weight:700">NARROW</td><td><span class="pill pill-HOLD">KEEP STAKED</span></td></tr>
-        <tr><td style="font-weight:700">Hedera (HBAR)</td><td class="neutral-val">★★★☆☆</td><td class="neutral-val">★★☆☆☆</td><td class="up">★★★★☆</td><td class="neutral-val">★★☆☆☆</td><td class="neutral-val" style="font-weight:700">NARROW</td><td><span class="pill pill-HOLD">HOLD SMALL</span></td></tr>
-        <tr><td style="font-weight:700">Quant (QNT)</td><td class="neutral-val">★★☆☆☆</td><td class="neutral-val">★★☆☆☆</td><td class="neutral-val">★★★☆☆</td><td class="neutral-val">★★★☆☆</td><td class="neutral-val" style="font-weight:700">NARROW</td><td><span class="pill pill-HOLD">HOLD/TRIM</span></td></tr>
-        <tr><td style="font-weight:700">Amp (AMP)</td><td class="down">★★☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down">★★☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down" style="font-weight:700">NONE</td><td><span class="pill pill-SELL">EXIT</span></td></tr>
-        <tr><td style="font-weight:700">Shiba Inu (SHIB)</td><td class="down">★☆☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down" style="font-weight:700">NONE</td><td><span class="pill pill-AVOID">EXIT</span></td></tr>
-        <tr><td style="font-weight:700">ResearchCoin (RSC)</td><td class="down">★☆☆☆☆</td><td class="neutral-val">★★☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down" style="font-weight:700">NONE</td><td><span class="pill pill-AVOID">EXIT</span></td></tr>
-        <tr><td style="font-weight:700">VPay (VPAY)</td><td class="down">★☆☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down" style="font-weight:700">NONE</td><td><span class="pill pill-AVOID">EXIT</span></td></tr>
-        <tr><td style="font-weight:700">Zora (ZORA)</td><td class="down">★★☆☆☆</td><td class="neutral-val">★★☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down">★☆☆☆☆</td><td class="down" style="font-weight:700">NONE</td><td><span class="pill pill-AVOID">EXIT</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="alert red"><div class="alert-title">Bain Conclusion: $20,108 in Zero-Moat Assets</div><div class="alert-body">RSC, VPAY, ZORA, AMP, and SHIB collectively score NONE on competitive moat. In Bain's framework, zero-moat assets in competitive markets get competed away to zero over time. The question isn't whether to exit these — it's when. Exit on any 20%+ relief rally, not during panic sell-offs when liquidity is thin.</div></div>
-</div>
-
-<!-- ═══════════════════════════════════════════ HARVARD ═══ -->
-<div id="page-harvard" class="page">
-  <div class="page-header">
-    <div class="firm-tag">FRAMEWORK 7 // HARVARD ENDOWMENT — INCOME & YIELD STRATEGY</div>
-    <h2>INCOME GENERATION STRATEGY</h2>
-    <p>Harvard endowment income model adapted for crypto. Traditional: dividend yield, DRIP, bond income. Crypto adaptation: staking yield, liquidity provision, lending, and yield-bearing positions as income equivalents.</p>
-  </div>
-
-  <div class="grid-4" style="margin-bottom:20px">
-    <div class="kpi green"><div class="kpi-label">SOL Staking APY</div><div class="kpi-value green">6.8%</div><div class="kpi-sub">On $9,773 = ~$664/yr</div></div>
-    <div class="kpi green"><div class="kpi-label">AVAX Staking APY</div><div class="kpi-value green">7.2%</div><div class="kpi-sub">On $4,979 = ~$358/yr</div></div>
-    <div class="kpi blue"><div class="kpi-label">Total Annual Yield</div><div class="kpi-value blue">$1,022</div><div class="kpi-sub">From existing staking</div></div>
-    <div class="kpi yellow"><div class="kpi-label">Yield on Portfolio</div><div class="kpi-value yellow">1.2%</div><div class="kpi-sub">Could be 4-6% optimized</div></div>
-  </div>
-
-  <div class="grid-2">
-    <div class="panel-lg">
-      <div class="panel-title">Yield Optimization — Full Portfolio</div>
-      <table class="data-table">
-        <thead><tr><th>Asset</th><th>Current Yield</th><th>Available Yield</th><th>Annual Income</th><th>Action</th></tr></thead>
-        <tbody>
-          <tr><td>SOL 🔒 Staked</td><td class="up">6.8% APY</td><td class="up">6.8%</td><td class="up">+$664/yr</td><td><span class="pill pill-BUY">KEEP STAKED</span></td></tr>
-          <tr><td>AVAX 🔒 Staked</td><td class="up">7.2% APY</td><td class="up">7.2%</td><td class="up">+$358/yr</td><td><span class="pill pill-BUY">KEEP STAKED</span></td></tr>
-          <tr><td>ETH</td><td class="down">0% (unstaked)</td><td class="neutral-val">3.5-4.5% liquid staking</td><td class="neutral-val">+$131-169/yr</td><td><span class="pill pill-BUY">STAKE VIA LIDO</span></td></tr>
-          <tr><td>BTC</td><td class="down">0%</td><td class="neutral-val">1-3% (lending/wrapped)</td><td class="neutral-val">+$125-375/yr</td><td><span class="pill pill-HOLD">OPTIONAL — risk tradeoff</span></td></tr>
-          <tr><td>LINK</td><td class="down">0%</td><td class="neutral-val">4-6% staking</td><td class="neutral-val">+$29-43/yr</td><td><span class="pill pill-BUY">STAKE — easy win</span></td></tr>
-          <tr><td>USDC (if added)</td><td class="neutral-val">—</td><td class="up">4.5-5.5% DeFi/CEX</td><td class="up">+$374-458/yr on $8,345</td><td><span class="pill pill-BUY">ADD + EARN</span></td></tr>
-          <tr><td>RSC / VPAY / ZORA</td><td class="down">0%</td><td class="down">No reliable yield</td><td class="down">$0</td><td><span class="pill pill-SELL">EXIT → REDEPLOY</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="panel">
-        <div class="panel-title">Optimized Income Projection</div>
-        <div class="alert green"><div class="alert-title">Current Annual Yield: ~$1,022</div><div class="alert-body">SOL staking $664 + AVAX staking $358. Only 17.7% of your portfolio is working for you via yield. The other 82.3% is sitting idle.</div></div>
-        <div class="alert blue"><div class="alert-title">Optimized Annual Yield: ~$3,800-4,500</div><div class="alert-body">If you: (1) stake ETH via Lido, (2) stake LINK, (3) add a 10% USDC buffer earning 5%, and (4) redeploy RSC/VPAY/ZORA exits into yield-bearing positions — your annual passive income from this portfolio jumps to $3,800-4,500/year without increasing capital.</div></div>
-        <div class="alert yellow"><div class="alert-title">Harvard Endowment Principle</div><div class="alert-body">Harvard targets 5%+ total yield on endowment to fund operations. For crypto, a combination of staking + DeFi lending can achieve 4-6% portfolio yield on quality assets. This creates a compound effect: yield buys more BTC/ETH automatically.</div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════ ACTION PLAN ═══ -->
-<div id="page-action" class="page">
-  <div class="page-header">
-    <div class="firm-tag">SYNTHESIZED OUTPUT // ALL 13 FRAMEWORKS</div>
-    <h2>MASTER ACTION PLAN</h2>
-    <p>All 13 frameworks synthesized into a prioritized, time-sequenced action plan. Every recommendation is cross-validated across multiple frameworks before inclusion.</p>
-  </div>
-
-  <div class="grid-3" style="margin-bottom:20px">
-    <div class="kpi red"><div class="kpi-label">Urgent Actions</div><div class="kpi-value red">3</div><div class="kpi-sub">Do within 7 days</div></div>
-    <div class="kpi yellow"><div class="kpi-label">Near-Term Actions</div><div class="kpi-value yellow">4</div><div class="kpi-sub">Do within 30 days</div></div>
-    <div class="kpi green"><div class="kpi-label">Strategic Actions</div><div class="kpi-value green">3</div><div class="kpi-sub">Ongoing / structural</div></div>
-  </div>
-
-  <div class="grid-2">
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="panel-lg">
-        <div class="panel-title">🔴 Urgent — Next 7 Days</div>
-        <div class="action-item">
-          <div class="action-num">01</div>
-          <div class="action-content">
-            <div class="action-title">Exit RSC + VPAY + ZORA on Any Strength</div>
-            <div class="action-body">All 3 score AVOID on Goldman screen, NONE on Bain moat analysis, CRITICAL on Bridgewater risk, and have no JPMorgan catalysts. Combined $20,108. Do NOT try to time a recovery — set sell orders at +20% from current price and exit. Redeploy 50% to BTC, 30% to ETH, 20% to USDC.</div>
-            <span class="action-tag urgent">URGENT — ALL FRAMEWORKS AGREE</span>
-          </div>
-        </div>
-        <div class="action-item">
-          <div class="action-num">02</div>
-          <div class="action-content">
-            <div class="action-title">Build 10% Stablecoin Buffer (USDC)</div>
-            <div class="action-body">Bridgewater principle: always hold a volatility buffer. With FOMC 12 days away and Fear & Greed at 18, having ~$8,345 in USDC earning 4.5-5% gives you dry powder for post-FOMC dip buying AND a hedge if hawkish surprise hits. Fund from SHIB + AMP exits.</div>
-            <span class="action-tag urgent">RISK MANAGEMENT — Bridgewater + BlackRock</span>
-          </div>
-        </div>
-        <div class="action-item">
-          <div class="action-num">03</div>
-          <div class="action-content">
-            <div class="action-title">Exit SHIB + AMP on Any Rally</div>
-            <div class="action-body">Goldman score 17 and 36 respectively. No institutional adoption path, no developer moat (Bain), and no yield (Harvard). Combined ~$7,760. SHIB is a meme asset that requires a specific narrative cycle to pump — you're not positioned to wait for that.</div>
-            <span class="action-tag urgent">URGENT — Goldman + Bain + Harvard</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel-lg">
-        <div class="panel-title">🟡 Near-Term — Next 30 Days</div>
-        <div class="action-item">
-          <div class="action-num">04</div>
-          <div class="action-content">
-            <div class="action-title">Stake ETH via Lido (stETH)</div>
-            <div class="action-body">Your $3,745 ETH earns 0%. Liquid staking via Lido gives you 3.5-4.5% APY while keeping ETH fully liquid (you get stETH you can sell anytime). Harvard model shows this adds ~$150/yr and compounds. 30-minute setup on any major DEX or Lido.fi.</div>
-            <span class="action-tag watch">YIELD OPTIMIZATION — Harvard + BlackRock</span>
-          </div>
-        </div>
-        <div class="action-item">
-          <div class="action-num">05</div>
-          <div class="action-content">
-            <div class="action-title">Position for FOMC (March 18) — Two Scenarios</div>
-            <div class="action-body">Citadel trade plan: If you have USDC buffer built, buy BTC aggressively on any hawkish surprise dip to $71K (RSI would hit 20-22 = maximum contrarian buy signal per Ren Tech). If dovish, USDC deploys into BTC as it breaks $78K. Either way — have the cash ready before March 18.</div>
-            <span class="action-tag watch">CATALYST EVENT — Citadel + JPMorgan + Ren Tech</span>
-          </div>
-        </div>
-        <div class="action-item">
-          <div class="action-num">06</div>
-          <div class="action-content">
-            <div class="action-title">Add to BTC and ETH (After Exits Free Up Capital)</div>
-            <div class="action-body">After exiting RSC/VPAY/ZORA/SHIB/AMP, redeploy 50% into BTC and 30% into ETH. This improves Goldman screen score, Bridgewater concentration metric, and BlackRock core allocation in one move. BTC target: 30% of portfolio. ETH target: 20% of portfolio.</div>
-            <span class="action-tag watch">ALLOCATION — BlackRock + Goldman + Bridgewater</span>
-          </div>
-        </div>
-        <div class="action-item">
-          <div class="action-num">07</div>
-          <div class="action-content">
-            <div class="action-title">Stake LINK for 4-6% APY</div>
-            <div class="action-body">LINK has a wide competitive moat (Bain: oracle market dominance), is a Goldman BUY, and has the Clarity Act as a direct catalyst. At $719 it's underweighted. Staking it adds $29-43/yr and keeps you in position for the regulatory catalyst. Do this now.</div>
-            <span class="action-tag watch">YIELD + POSITION — Harvard + Bain + JPMorgan</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="panel-lg">
-        <div class="panel-title">🟢 Strategic — Ongoing</div>
-        <div class="action-item">
-          <div class="action-num">08</div>
-          <div class="action-content">
-            <div class="action-title">Rebalancing Rule: Monthly Check</div>
-            <div class="action-body">BlackRock IPS trigger: if any single position exceeds 20% of portfolio, trim 5% back. If any position falls below 1%, evaluate exit. Review first Friday of every month. This prevents the concentration problem from recurring as markets move.</div>
-            <span class="action-tag hold">STRUCTURAL — BlackRock Aladdin</span>
-          </div>
-        </div>
-        <div class="action-item">
-          <div class="action-num">09</div>
-          <div class="action-content">
-            <div class="action-title">Monitor H2 2026 Bull Catalyst Window</div>
-            <div class="action-body">McKinsey macro timeline: if Fed cuts resume H2 2026 + Clarity Act passes + Fed Chair transition is smooth → CoinShares base case of BTC $110-140K. At that level your portfolio (after restructuring) would be worth $160-190K. Do not sell everything at first 50% rally. Use Citadel profit targets: sell 20% at Target 1, hold rest for Target 2.</div>
-            <span class="action-tag hold">STRATEGIC — McKinsey + CoinShares + Citadel</span>
-          </div>
-        </div>
-        <div class="action-item">
-          <div class="action-num">10</div>
-          <div class="action-content">
-            <div class="action-title">Watch XRP + SOL for Clarity Act Breakout</div>
-            <div class="action-body">JPMorgan catalyst analysis: XRP and SOL are the highest direct beneficiaries of regulatory clarity. If the Clarity Act passes in 2026, both assets historically surge 3-5x from legal certainty alone. Both are already in your portfolio. Hold through the vote. Do not exit before this catalyst resolves.</div>
-            <span class="action-tag opportunity">OPPORTUNITY — JPMorgan + Bain + McKinsey</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel-lg">
-        <div class="panel-title">Expected Portfolio After Full Restructure</div>
-        <table class="data-table">
-          <thead><tr><th>Bucket</th><th>Assets</th><th>$ Value</th><th>% Portfolio</th></tr></thead>
-          <tbody>
-            <tr><td style="color:var(--accent);font-weight:700">Core L1</td><td>BTC + ETH</td><td class="up">~$33,400</td><td class="up">40%</td></tr>
-            <tr><td style="color:var(--accent3);font-weight:700">Core L2 Staked</td><td>SOL + AVAX</td><td class="neutral-val">~$16,700</td><td class="neutral-val">20%</td></tr>
-            <tr><td style="color:var(--accent3);font-weight:700">Satellite</td><td>XRP, LINK, HBAR, QNT</td><td class="neutral-val">~$20,900</td><td class="neutral-val">25%</td></tr>
-            <tr><td style="color:var(--accent4);font-weight:700">Stablecoin Buffer</td><td>USDC (earning 5%)</td><td class="up">~$8,345</td><td class="up">10%</td></tr>
-            <tr><td style="color:var(--muted);font-weight:700">Exits</td><td>RSC/VPAY/ZORA/SHIB/AMP</td><td class="down">$0</td><td class="down">0%</td></tr>
-          </tbody>
-        </table>
-        <div style="margin-top:12px;padding:12px;background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:6px">
-          <div style="font-family:var(--mono);font-size:10px;color:var(--accent4);font-weight:500;margin-bottom:4px">PROJECTED IMPROVEMENT</div>
-          <div style="font-size:12px;color:rgba(221,232,245,0.75)">VaR reduces from -$7,200 to -$4,800 · Yield increases from $1,022 to $3,800+/yr · Concentration risk drops from 9.1/10 to 5.5/10 · Liquidity risk drops from 8.4/10 to 3.2/10</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:20px;padding:16px;border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.8">
-    DISCLAIMER: This analysis is for informational purposes only. All scenarios, scores, and projections are model-based estimates derived from publicly available data and historical patterns. This is not financial advice. Cryptocurrency investments are highly volatile and you can lose your entire investment. Past pattern performance does not guarantee future results. Always conduct your own research and consider consulting a licensed financial advisor.
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════ RED TEAM ═══ -->
-<div id="page-redteam" class="page">
-  <div class="page-header">
-    <div class="firm-tag">PIPELINE STEP 12-13 // DEVIL'S ADVOCATE — ADVERSARIAL ANALYSIS</div>
-    <h2>RED TEAM CHALLENGE</h2>
-    <p>A separate analytical agent argues directly against our recommendations. Every consensus view is stress-tested. Weak reasoning is exposed. Only recommendations that survive this challenge remain in the Action Plan.</p>
-  </div>
-
-  <div class="alert red" style="margin-bottom:24px">
-    <div class="alert-title">⚠ RED TEAM CHARTER</div>
-    <div class="alert-body">The Red Team assumes everything the other 10 frameworks got wrong. It argues the opposite of consensus, stress-tests every assumption, and forces justification of every recommendation. This is not pessimism — it is how professional investment committees operate.</div>
-  </div>
-
-  <div class="grid-2" style="margin-bottom:20px">
-
-    <div style="display:flex;flex-direction:column;gap:16px">
-
-      <div class="panel-lg">
-        <div class="panel-title" style="color:var(--accent2)">Challenge 1 — Against "Exit RSC/VPAY/ZORA"</div>
-        <div class="alert red"><div class="alert-title">RED TEAM ARGUES</div><div class="alert-body">Selling RSC, VPAY, and ZORA at current cycle lows locks in maximum loss. These assets are already down 60-80% from their highs. The Goldman score of 15-25 is backward-looking — it scores current fundamentals, not future narrative potential. ZORA's NFT infrastructure and RSC's science community are niche but defensible. Micro-caps historically produce the highest returns in bull cycle second legs when liquidity returns. Selling now may mean missing a 5-10x recovery.</div></div>
-        <div class="alert green"><div class="alert-title">RED TEAM VERDICT AFTER REVIEW</div><div class="alert-body"><strong>Challenge partially valid.</strong> The timing argument has merit — selling at the bottom is painful. The counter-counter: the 5-10x recovery thesis requires a specific narrative catalyst that none of these three assets currently have. The liquidity risk (can't exit at screen price during a crash) outweighs the potential upside. Recommendation stands, but modified: set exit orders at +15-20% from current price, not market orders. Do not panic-sell.</div></div>
-      </div>
-
-      <div class="panel-lg">
-        <div class="panel-title" style="color:var(--accent2)">Challenge 2 — Against "BTC is Safe"</div>
-        <div class="alert red"><div class="alert-title">RED TEAM ARGUES</div><div class="alert-body">The engine treats BTC as the "safe" anchor and recommends increasing allocation to 30%. But BTC is down 17% YTD in 2026, below its 200-day moving average, and the death cross has formed. Increasing BTC concentration at this moment is buying into a confirmed downtrend. The Citadel technical module itself says "WAIT — no entry signal yet." These two recommendations directly contradict each other.</div></div>
-        <div class="alert yellow"><div class="alert-title">RED TEAM VERDICT AFTER REVIEW</div><div class="alert-body"><strong>Challenge valid — contradiction confirmed and corrected.</strong> The engine was inconsistent. Resolution: the BTC increase is a conditional recommendation, not an immediate one. Specifically: add to BTC ONLY after (a) exits from low-conviction assets free up capital, AND (b) Citadel entry signal triggers (RSI 20-22 + volume spike + $71K support holds). Updated Action Plan step 06 now reflects this condition.</div></div>
-      </div>
-
-      <div class="panel-lg">
-        <div class="panel-title" style="color:var(--accent2)">Challenge 3 — Against "Build Stablecoin Buffer"</div>
-        <div class="alert red"><div class="alert-title">RED TEAM ARGUES</div><div class="alert-body">Holding 10% in USDC earning 4.5-5% sounds prudent, but it's opportunity cost disguised as risk management. If BTC moves from $74K to $110K — a move the McKinsey and Renaissance modules both assign 35%+ probability — that 10% USDC earns $416/year while it would have earned $4,860 as BTC. In a bull market, cash is the riskiest asset to hold. The Fear & Greed contrarian signal is strongest right now — maximum deployment, not maximum caution, is the historical playbook.</div></div>
-        <div class="alert green"><div class="alert-title">RED TEAM VERDICT AFTER REVIEW</div><div class="alert-body"><strong>Challenge noted, recommendation maintained with adjustment.</strong> The Red Team's bull case math is correct. However, it ignores the FOMC binary event on March 18 where a hawkish surprise produces -6-9% BTC move. A 10% cash buffer that lets you buy that dip is worth more than the opportunity cost in that specific scenario. Reduced buffer from 10% to 8% as a compromise. The stablecoin is dry powder, not dead weight.</div></div>
-      </div>
-
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:16px">
-
-      <div class="panel-lg">
-        <div class="panel-title" style="color:var(--accent2)">Challenge 4 — Against "Extreme Fear = Buy Signal"</div>
-        <div class="alert red"><div class="alert-title">RED TEAM ARGUES</div><div class="alert-body">The Renaissance module presents Fear & Greed below 20 as a near-certain buy signal, citing "7 of 8 occurrences produced positive 90-day returns." This is survivorship bias from a 5-year bull market sample size. Crypto has only been a recognized asset class since ~2017. Eight data points is not a statistically significant sample. Furthermore, in the one instance where F&G below 20 did NOT produce positive returns, it was the 2022 LUNA/FTX collapse — which wiped 75% of the market. That's the scenario currently in our tail risk table.</div></div>
-        <div class="alert yellow"><div class="alert-title">RED TEAM VERDICT AFTER REVIEW</div><div class="alert-body"><strong>Challenge valid — statistical caveat added.</strong> The 8-instance sample warning is correct. Renaissance framework updated with explicit caveat: pattern is directionally useful but not statistically robust with n=8. The key differentiator in 2022 was centralized exchange failure (FTX), not just market sentiment. That specific contagion risk is lower today given regulatory progress, but cannot be dismissed. Confidence in the contrarian signal reduced from "strong" to "moderate."</div></div>
-      </div>
-
-      <div class="panel-lg">
-        <div class="panel-title" style="color:var(--accent2)">Challenge 5 — Against "SOL + AVAX Staking is Safe"</div>
-        <div class="alert red"><div class="alert-title">RED TEAM ARGUES</div><div class="alert-body">The Harvard module recommends keeping SOL and AVAX staked for 6.8-7.2% APY. But both assets are 100% locked with 2-7 day unbonding periods. The FOMC is 12 days away. If the Fed delivers a hawkish surprise and BTC drops to $67K, alts typically fall 2-3x as hard. SOL and AVAX could drop 20-30% in 48 hours. You cannot exit. The "staking income" of $1,022/year does not compensate for a potential $3,000-4,500 mark-to-market loss you cannot stop.</div></div>
-        <div class="alert green"><div class="alert-title">RED TEAM VERDICT AFTER REVIEW</div><div class="alert-body"><strong>Challenge valid but recommendation maintained.</strong> The lockup risk is real and correctly identified. However, the decision to stake SOL and AVAX was made before this analysis — unwinding requires 2-7 days regardless of when the decision is made. Starting the unstake process NOW costs more in lost yield than it gains in protection given the FOMC is 12 days away. Recommendation: begin unstake process on one-third of AVAX (smaller position) as partial hedge. Keep SOL fully staked — its protocol upgrade catalyst makes it worth the lockup risk.</div></div>
-      </div>
-
-      <div class="panel-lg">
-        <div class="panel-title" style="color:var(--accent2)">Challenge 6 — Against "XRP is a Regulatory Play"</div>
-        <div class="alert red"><div class="alert-title">RED TEAM ARGUES</div><div class="alert-body">Every framework labels XRP as a "hold" justified by the Clarity Act catalyst. But XRP at $2.28 is already pricing in significant legal resolution from the 2023 SEC ruling. The Clarity Act is not guaranteed to pass. XRP's fundamental utility as a cross-border payment rail has been challenged by SWIFT upgrades, Circle's USDC, and Stellar (XLM) — which you also hold. You have $13,949 across XRP and XLM, two assets competing for the same payment corridor market. That's concentrated sector exposure within an already concentrated portfolio.</div></div>
-        <div class="alert yellow"><div class="alert-title">RED TEAM VERDICT AFTER REVIEW</div><div class="alert-body"><strong>Challenge valid — action added.</strong> The XRP + XLM overlap is a real concentration issue that the original 10 frameworks missed. Combined they represent 16.7% of portfolio in the same macro theme (cross-border payments). Recommendation added to Action Plan: if the Clarity Act stalls or fails, reduce XLM to near-zero first (weaker moat per Bain), keep XRP. Do not hold both long-term at current weights.</div></div>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="panel" style="margin-top:4px">
-    <div class="panel-title">Red Team Summary — What Changed</div>
-    <table class="data-table">
-      <thead><tr><th>#</th><th>Challenge</th><th>Verdict</th><th>Action Plan Change</th></tr></thead>
-      <tbody>
-        <tr><td class="mono-val">1</td><td>Don't exit micro-caps at lows</td><td><span class="pill pill-HOLD">PARTIALLY VALID</span></td><td>Use limit orders at +15-20%, not market orders</td></tr>
-        <tr><td class="mono-val">2</td><td>BTC buy signal contradicts technicals</td><td><span class="pill pill-SELL">VALID — contradiction found</span></td><td>BTC add is now conditional on Citadel entry trigger</td></tr>
-        <tr><td class="mono-val">3</td><td>Stablecoin = opportunity cost</td><td><span class="pill pill-HOLD">PARTIALLY VALID</span></td><td>Buffer reduced from 10% to 8%</td></tr>
-        <tr><td class="mono-val">4</td><td>Fear & Greed sample size too small</td><td><span class="pill pill-SELL">VALID — caveat added</span></td><td>Renaissance signal confidence reduced to "moderate"</td></tr>
-        <tr><td class="mono-val">5</td><td>Staking lockup = unhedgeable FOMC risk</td><td><span class="pill pill-HOLD">PARTIALLY VALID</span></td><td>Unstake 1/3 AVAX now as partial hedge</td></tr>
-        <tr><td class="mono-val">6</td><td>XRP + XLM = same sector overweight</td><td><span class="pill pill-SELL">VALID — new risk found</span></td><td>Exit XLM before XRP if Clarity Act fails</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════ SOURCE INTEL ═══ -->
-<div id="page-sources" class="page">
-  <div class="page-header">
-    <div class="firm-tag">PIPELINE STEP 17 // SOURCE TIER SCORING — DATA INTEGRITY LAYER</div>
-    <h2>SOURCE INTELLIGENCE</h2>
-    <p>Every data point in this engine is tagged by source tier. Tier 1 = primary institutional data. Tier 4 = unverified/model-estimated. Claims supported only by Tier 3-4 sources are flagged for independent verification before acting.</p>
-  </div>
-
-  <div class="grid-4" style="margin-bottom:20px">
-    <div class="kpi green"><div class="kpi-label">Tier 1 Claims</div><div class="kpi-value green">38%</div><div class="kpi-sub">Primary institutional sources</div></div>
-    <div class="kpi blue"><div class="kpi-label">Tier 2 Claims</div><div class="kpi-value blue">35%</div><div class="kpi-sub">Major financial media</div></div>
-    <div class="kpi yellow"><div class="kpi-label">Tier 3 Claims</div><div class="kpi-value yellow">18%</div><div class="kpi-sub">Aggregated/secondary</div></div>
-    <div class="kpi red"><div class="kpi-label">Tier 4 (Model Est.)</div><div class="kpi-value red">9%</div><div class="kpi-sub">Requires verification</div></div>
-  </div>
-
-  <div class="panel-lg" style="margin-bottom:20px">
-    <div class="panel-title">Source Tier Legend</div>
-    <table class="data-table">
-      <thead><tr><th>Tier</th><th>Definition</th><th>Examples</th><th>Trust Level</th></tr></thead>
-      <tbody>
-        <tr><td><span class="pill pill-STRONG-BUY">TIER 1</span></td><td>Primary institutional data, government sources, official filings</td><td>Federal Reserve, CME Group, SEC filings, CoinShares weekly report, Grayscale official data, FOMC statements</td><td class="up">Highest — act on directly</td></tr>
-        <tr><td><span class="pill pill-BUY">TIER 2</span></td><td>Major financial media with editorial standards</td><td>Bloomberg, CoinDesk, Reuters, Financial Times, Coinbase institutional blog, BlackRock research</td><td class="up">High — verify if acting on large positions</td></tr>
-        <tr><td><span class="pill pill-HOLD">TIER 3</span></td><td>Aggregated data, analytics platforms, secondary analysis</td><td>CoinGecko, Messari, Glassnode free tier, crypto Twitter consensus, Fear & Greed Index (Alternative.me)</td><td class="neutral-val">Moderate — cross-verify before acting</td></tr>
-        <tr><td><span class="pill pill-AVOID">TIER 4</span></td><td>Model estimates, pattern extrapolations, AI-generated projections</td><td>VaR estimates in this engine, correlation scores, Goldman scores, moat ratings, scenario loss estimates</td><td class="down">Directional only — do not trade on precise figures</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="panel-lg" style="margin-bottom:20px">
-    <div class="panel-title">Key Claims — Source Verification Status</div>
-    <table class="data-table">
-      <thead><tr><th>Claim</th><th>Framework</th><th>Source</th><th>Tier</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td>FOMC hold probability 94%</td><td>McKinsey</td><td>CME FedWatch Tool</td><td><span class="pill pill-STRONG-BUY">T1</span></td><td class="up">✓ Verified</td></tr>
-        <tr><td>BTC down 17% YTD 2026</td><td>McKinsey / Overview</td><td>CoinDesk market data</td><td><span class="pill pill-BUY">T2</span></td><td class="up">✓ Verified</td></tr>
-        <tr><td>Fear & Greed Index = 18</td><td>Overview / Ren Tech</td><td>Alternative.me F&G Index</td><td><span class="pill pill-HOLD">T3</span></td><td class="neutral-val">✓ Verified — T3 source</td></tr>
-        <tr><td>SOL staking APY ~6.8%</td><td>Harvard</td><td>Staking Rewards aggregator</td><td><span class="pill pill-HOLD">T3</span></td><td class="neutral-val">✓ Directionally accurate</td></tr>
-        <tr><td>AVAX staking APY ~7.2%</td><td>Harvard</td><td>Staking Rewards aggregator</td><td><span class="pill pill-HOLD">T3</span></td><td class="neutral-val">✓ Directionally accurate</td></tr>
-        <tr><td>BTC YTD rank vs alts</td><td>McKinsey</td><td>CoinDesk / CoinGecko</td><td><span class="pill pill-BUY">T2</span></td><td class="up">✓ Verified</td></tr>
-        <tr><td>CoinShares BTC target $110-140K</td><td>McKinsey</td><td>CoinShares 2026 outlook report</td><td><span class="pill pill-BUY">T2</span></td><td class="up">✓ Cited institutional research</td></tr>
-        <tr><td>JPM BTC target $170K</td><td>Overview</td><td>JPMorgan research note (2025)</td><td><span class="pill pill-BUY">T2</span></td><td class="up">✓ Published analyst target</td></tr>
-        <tr><td>VaR estimate: -$7,200 (1-day 95%)</td><td>Overview / Bridgewater</td><td>Model estimate — historical vol inputs</td><td><span class="pill pill-AVOID">T4</span></td><td class="down">⚠ Model estimate — directional only</td></tr>
-        <tr><td>Goldman scores (94, 89, 81...)</td><td>Goldman</td><td>Proprietary scoring model — this engine</td><td><span class="pill pill-AVOID">T4</span></td><td class="down">⚠ Relative rankings valid, absolute scores are estimates</td></tr>
-        <tr><td>Bain moat star ratings</td><td>Bain</td><td>Qualitative assessment — this engine</td><td><span class="pill pill-AVOID">T4</span></td><td class="down">⚠ Framework-based judgment, not third-party ratings</td></tr>
-        <tr><td>BTC correlation 0.87 to portfolio</td><td>Bridgewater</td><td>Historical return data — model estimate</td><td><span class="pill pill-AVOID">T4</span></td><td class="down">⚠ Estimated from historical patterns, verify via Glassnode Pro</td></tr>
-        <tr><td>F&G below 20 → +42% avg 90-day</td><td>Ren Tech</td><td>Aggregated historical analysis</td><td><span class="pill pill-HOLD">T3</span></td><td class="neutral-val">⚠ n=8 sample (see Red Team Challenge 4)</td></tr>
-        <tr><td>Post-halving cycle bullish pattern</td><td>Ren Tech</td><td>Grayscale / multiple research notes</td><td><span class="pill pill-BUY">T2</span></td><td class="up">✓ Well-documented, consensus view</td></tr>
-        <tr><td>Warsh at 60% in prediction markets</td><td>McKinsey</td><td>Polymarket / Kalshi aggregated</td><td><span class="pill pill-HOLD">T3</span></td><td class="neutral-val">✓ Directionally accurate at time of analysis</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="grid-2">
-    <div class="alert yellow">
-      <div class="alert-title">⚠ Tier 4 Claims — Do Not Trade on Precise Figures</div>
-      <div class="alert-body">The VaR figure of -$7,200, all Goldman scores, Bain moat stars, and correlation coefficients are model-generated estimates built into this engine. They are directionally correct and useful for relative comparisons — but you should not place a trade because "my VaR is exactly $7,200." Use them as order-of-magnitude guides. For precise risk figures, cross-reference Glassnode, IntoTheBlock, or a professional risk platform.</div>
-    </div>
-    <div class="alert blue">
-      <div class="alert-title">Verification Protocol — Before Any Large Trade</div>
-      <div class="alert-body">Before acting on any recommendation over $2,000 in size: (1) verify the catalyst claim on CoinDesk or Bloomberg directly, (2) check CME FedWatch for latest FOMC probability, (3) check current Fear & Greed on alternative.me, (4) verify staking APY on StakingRewards.com. Total verification time: under 10 minutes. These are all free sources.</div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════ EXEC BRIEF ═══ -->
-<div id="page-brief" class="page">
-  <div class="page-header">
-    <div class="firm-tag">PIPELINE STEPS 14-16 // DISTILLED EXECUTIVE SUMMARY</div>
-    <h2>EXECUTIVE BRIEF</h2>
-    <p>Full 13-framework analysis + Red Team challenges distilled to the essential decision brief. Written in plain language. Everything you need to act — nothing you don't.</p>
-  </div>
-
-  <div class="grid-3" style="margin-bottom:24px">
-    <div class="kpi red"><div class="kpi-label">Portfolio Health</div><div class="kpi-value red">CRITICAL</div><div class="kpi-sub">Restructure required</div></div>
-    <div class="kpi yellow"><div class="kpi-label">Market Timing</div><div class="kpi-value yellow">NEUTRAL</div><div class="kpi-sub">Wait for FOMC Mar 18</div></div>
-    <div class="kpi green"><div class="kpi-label">Macro Outlook H2</div><div class="kpi-value green">BULLISH</div><div class="kpi-sub">If Fed pivots + Clarity Act</div></div>
-  </div>
-
-  <div class="panel-lg" style="margin-bottom:20px">
-    <div class="panel-title">THE SITUATION — Plain Language</div>
-    <div style="font-size:14px;line-height:1.9;color:var(--text)">
-      <p style="margin-bottom:14px">You have <strong>$83,457</strong> in crypto across 20 positions. The good news: you are already positioned in the right asset class at the right time in the cycle. The bad news: the way the money is distributed across those 20 positions is significantly reducing your returns and dramatically increasing your risk.</p>
-      <p style="margin-bottom:14px">Specifically — <strong>24% of your portfolio ($20,108) is in five assets that every analytical framework in this engine agrees should not be held long-term:</strong> ResearchCoin, VPay, Zora, Shiba Inu, and Amp. These assets have no institutional adoption path, no competitive moat, and no near-term catalyst. They are deadweight that is dragging down your overall portfolio quality while adding outsized risk.</p>
-      <p style="margin-bottom:14px">At the same time, your genuinely strong assets — Bitcoin, Ethereum, Solana, Chainlink, and Avalanche — are underweighted relative to what a professional allocation would look like. You have <strong>less than 20% of your money in BTC and ETH combined</strong>, which are the two assets with the widest competitive moats, the highest Goldman scores, and the best macro positioning for what's coming.</p>
-      <p style="margin-bottom:14px">The market is in Extreme Fear (Fear & Greed = 18). <strong>This is historically one of the best times to be patient and positioned in quality assets — not to be selling BTC/ETH, and not to be holding speculative tokens hoping for a miracle recovery.</strong> Renaissance Technologies pattern data shows 90-day forward BTC returns average +42% from this sentiment level, though the sample size is small (verified in Red Team).</p>
-      <p>The FOMC on <strong>March 18 is the single most important near-term event.</strong> A dovish tone could move BTC up 4-6% immediately. A hawkish surprise could push it down 6-9%. Having 8% in stablecoins before that date gives you the ability to take advantage of either outcome.</p>
-    </div>
-  </div>
-
-  <div class="grid-2" style="margin-bottom:20px">
-    <div class="panel-lg">
-      <div class="panel-title">THE 5 DECISIONS — In Order of Priority</div>
-      <div class="action-item">
-        <div class="action-num" style="color:var(--accent2)">1</div>
-        <div class="action-content">
-          <div class="action-title">Set exit orders on RSC, VPAY, ZORA, SHIB, AMP at +15-20% from today</div>
-          <div class="action-body">Do not market sell. Set limit orders above current price and let them fill on any relief rally. Redeploy 50% to BTC, 30% to ETH, 20% to USDC buffer. This is the single highest-impact move available.</div>
-          <span class="action-tag urgent">THIS WEEK</span>
-        </div>
-      </div>
-      <div class="action-item">
-        <div class="action-num" style="color:var(--accent2)">2</div>
-        <div class="action-content">
-          <div class="action-title">Build 8% USDC buffer before March 18 FOMC</div>
-          <div class="action-body">Fund from any partial exit proceeds. Park in USDC earning 4.5-5%. This is your dry powder for the post-FOMC move in either direction.</div>
-          <span class="action-tag urgent">BEFORE MARCH 18</span>
-        </div>
-      </div>
-      <div class="action-item">
-        <div class="action-num" style="color:var(--accent3)">3</div>
-        <div class="action-content">
-          <div class="action-title">Stake ETH via Lido and stake LINK</div>
-          <div class="action-body">$3,745 in ETH is earning 0%. Lido liquid staking gives 3.5-4.5% APY while staying fully liquid. LINK staking adds 4-6% on $719. Combined: +$180/yr for a 30-minute setup.</div>
-          <span class="action-tag watch">WITHIN 2 WEEKS</span>
-        </div>
-      </div>
-      <div class="action-item">
-        <div class="action-num" style="color:var(--accent3)">4</div>
-        <div class="action-content">
-          <div class="action-title">Begin unstaking 1/3 of AVAX now</div>
-          <div class="action-body">Red Team identified this: AVAX's 2-7 day unbonding means you need to start the process now if you want liquidity before March 18. Unstake ~$1,660 worth. Keep the rest staked for yield.</div>
-          <span class="action-tag watch">START TODAY</span>
-        </div>
-      </div>
-      <div class="action-item">
-        <div class="action-num" style="color:var(--accent4)">5</div>
-        <div class="action-content">
-          <div class="action-title">Add to BTC only when Citadel entry signal triggers</div>
-          <div class="action-body">Do not buy BTC now just because it "feels" cheap. Wait for: RSI drops to 20-22 AND daily volume spikes AND $71K support holds (or: post-FOMC dovish BTC break above $78K). Then deploy USDC into BTC aggressively.</div>
-          <span class="action-tag hold">CONDITIONAL — WAIT FOR SIGNAL</span>
-        </div>
-      </div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div class="panel">
-        <div class="panel-title">WHAT YOU ARE BETTING ON — Be Honest With Yourself</div>
-        <div style="font-size:13px;line-height:1.8;color:rgba(221,232,245,0.85)">
-          <p style="margin-bottom:10px">Holding this portfolio as-is is an implicit bet on <strong>all of the following happening:</strong></p>
-          <div class="alert red" style="margin-bottom:8px"><div class="alert-title">You need ALL of these to be right</div><div class="alert-body">① BTC recovers from current levels<br>② RSC/VPAY/ZORA find buyers despite no catalysts<br>③ SHIB has another meme cycle<br>④ The Clarity Act passes (XRP/SOL)<br>⑤ Fed pivots before the macro deteriorates<br>⑥ Your locked SOL/AVAX doesn't drop 30%+ before you can exit</div></div>
-          <p style="margin-bottom:10px">After restructuring, you only need <strong>one of the following to be right:</strong></p>
-          <div class="alert green"><div class="alert-title">You only need ONE of these</div><div class="alert-body">① BTC recovers to $110K (historical pattern + institutional inflows)<br>② ETH Fusaka fork drives adoption<br>③ Clarity Act passes (XRP/SOL surge)<br>④ Fed cuts in H2 2026 (all crypto benefits)</div></div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-title">PORTFOLIO BEFORE vs AFTER RESTRUCTURE</div>
-        <table class="data-table">
-          <thead><tr><th>Metric</th><th>Before</th><th>After</th><th>Change</th></tr></thead>
-          <tbody>
-            <tr><td>1-Day VaR</td><td class="down">-$7,200</td><td class="up">-$4,800</td><td class="up">-33% risk</td></tr>
-            <tr><td>Annual Yield</td><td class="down">$1,022</td><td class="up">$3,800+</td><td class="up">+272%</td></tr>
-            <tr><td>Concentration Risk</td><td class="down">9.1/10</td><td class="up">5.5/10</td><td class="up">Dramatically lower</td></tr>
-            <tr><td>Liquidity Risk</td><td class="down">8.4/10</td><td class="up">3.2/10</td><td class="up">Dramatically lower</td></tr>
-            <tr><td>Goldman Score (avg)</td><td class="down">51/100</td><td class="up">76/100</td><td class="up">+49%</td></tr>
-            <tr><td>% in AVOID-rated assets</td><td class="down">24%</td><td class="up">0%</td><td class="up">Eliminated</td></tr>
-            <tr><td>% immediately liquid</td><td class="down">65%</td><td class="up">87%</td><td class="up">+22pp</td></tr>
-            <tr><td>H2 2026 bull scenario</td><td class="neutral-val">~$145K</td><td class="up">~$190K</td><td class="up">+31% more upside</td></tr>
-          </tbody>
-        </table>
-        <div style="margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--muted)">The restructured portfolio captures MORE upside in a bull run while carrying dramatically less downside risk. This is the core institutional insight: quality concentration beats speculative diversification.</div>
-      </div>
-    </div>
-  </div>
-
-  <div style="padding:20px;border:1px solid rgba(0,229,160,0.2);border-radius:10px;background:rgba(0,229,160,0.03);margin-top:4px">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--accent4);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">Final Analyst Note — Cross-Framework Consensus</div>
-    <div style="font-size:13px;line-height:1.9;color:rgba(221,232,245,0.85)">Thirteen institutional frameworks, one Red Team challenge, one source verification layer, a tax optimization module, a portfolio architecture layer, and a digital estate plan all point to the same conclusion: <strong>your instinct to be in crypto is right. Your position sizing across assets needs work.</strong> The market is giving you a gift right now — extreme fear has compressed prices and the macro setup for H2 2026 is constructive. The question is whether you want to enter that potential bull run carrying $20,000 in deadweight, or carrying a clean, high-conviction, yield-generating portfolio with a tax strategy and succession plan in place that fires on all cylinders when the next move comes. The 5 decisions above are the difference between those two outcomes. None of them require market timing. None of them require predicting the future. They are structural improvements that make your portfolio better in every scenario.</div>
-  </div>
-
-  <div style="margin-top:16px;padding:14px;border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.8">
-    DISCLAIMER: This is not financial advice. All analysis is for informational and educational purposes only. Cryptocurrency is extremely volatile. You can lose your entire investment. Past patterns do not guarantee future results. Consult a licensed financial advisor before making investment decisions.
-  </div>
-</div>
-
-
-<!-- ═══════════════════════════ DELOITTE TAX ═══ -->
-<div id="page-tax" class="page">
-  <div class="page-header">
-    <div class="firm-tag">DELOITTE TAX OPTIMIZATION // FRAMEWORK 11 — CRYPTO TAX STRATEGY</div>
-    <h2>TAX OPTIMIZATION ENGINE</h2>
-    <p>Adapted from Deloitte's tax planning methodology. Every exit decision in this engine has a tax consequence. This module quantifies them and identifies strategies to legally minimize your tax burden.</p>
-  </div>
-  <div style="padding:16px 20px;background:rgba(255,61,107,0.06);border:1px solid rgba(255,61,107,0.25);border-left:4px solid var(--accent2);border-radius:8px;margin-bottom:24px">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--accent2);letter-spacing:2px;margin-bottom:6px">TAX LAYER STATUS — COST BASIS MISSING</div>
-    <div style="font-size:12px;color:var(--text);line-height:1.7">No cost basis or purchase dates provided. Analysis below uses framework logic and general crypto tax rules. To unlock precise figures: provide entry price + purchase date per asset. This is the single highest-ROI data input — it changes which assets to exit and when.</div>
-  </div>
-  <div class="grid-2" style="margin-bottom:24px">
-    <div class="panel-lg">
-      <div class="panel-title">SHORT vs LONG-TERM — The Critical Threshold</div>
-      <table class="data-table">
-        <thead><tr><th>Holding Period</th><th>Tax Treatment</th><th>Rate (US)</th><th>Strategy</th></tr></thead>
-        <tbody>
-          <tr><td style="color:var(--accent2)">&lt; 12 months</td><td>Short-term capital gain</td><td style="color:var(--accent2)">Ordinary income (10-37%)</td><td>Avoid selling if possible</td></tr>
-          <tr><td style="color:var(--accent4)">12+ months</td><td>Long-term capital gain</td><td style="color:var(--accent4)">0%, 15%, or 20%</td><td>Wait for this threshold</td></tr>
-          <tr><td style="color:var(--accent3)">Staking rewards</td><td>Ordinary income at receipt</td><td style="color:var(--accent3)">Your income tax rate</td><td>Track cost basis on receipt</td></tr>
-          <tr><td style="color:var(--muted)">Like-kind exchange</td><td>NOT applicable to crypto</td><td style="color:var(--muted)">N/A since 2018</td><td>Each trade is a taxable event</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="panel-lg">
-      <div class="panel-title">TAX IMPACT ON EXIT RECOMMENDATIONS</div>
-      <table class="data-table">
-        <thead><tr><th>Position</th><th>Exit Rec.</th><th>Tax Situation</th><th>Deloitte Flag</th></tr></thead>
-        <tbody>
-          <tr><td style="color:var(--accent)">RSC</td><td style="color:var(--accent2)">EXIT</td><td style="color:var(--accent4)">Likely loss — tax benefit</td><td style="color:var(--accent4)">HARVEST LOSS</td></tr>
-          <tr><td style="color:var(--accent)">VPAY</td><td style="color:var(--accent2)">EXIT</td><td style="color:var(--accent4)">Likely loss — tax benefit</td><td style="color:var(--accent4)">HARVEST LOSS</td></tr>
-          <tr><td style="color:var(--accent)">ZORA</td><td style="color:var(--accent2)">EXIT</td><td style="color:var(--accent4)">Likely loss — tax benefit</td><td style="color:var(--accent4)">HARVEST LOSS</td></tr>
-          <tr><td style="color:var(--accent)">SHIB</td><td style="color:var(--accent2)">EXIT</td><td style="color:var(--accent4)">Likely loss — tax benefit</td><td style="color:var(--accent4)">HARVEST LOSS</td></tr>
-          <tr><td style="color:var(--accent)">BTC</td><td style="color:var(--accent4)">HOLD/ADD</td><td style="color:var(--accent3)">Check 12-month threshold</td><td style="color:var(--accent3)">HOLD FOR LT</td></tr>
-          <tr><td style="color:var(--accent)">SOL</td><td style="color:var(--accent4)">HOLD</td><td style="color:var(--accent3)">Staking rewards = income</td><td style="color:var(--accent3)">TRACK REWARDS</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div class="panel-lg" style="margin-bottom:20px">
-    <div class="panel-title">TAX-LOSS HARVESTING — Deloitte Framework</div>
-    <div style="font-size:12px;line-height:1.8;color:var(--text);margin-bottom:16px"><strong style="color:var(--accent3)">What it is:</strong> Selling losing positions to realize a capital loss, offsetting capital gains elsewhere. For crypto, there is currently NO wash-sale rule — you can sell a loser and immediately rebuy it, locking in the tax loss while keeping your position. This is a major legal advantage stock investors don't have.</div>
-    <div class="grid-3">
-      <div style="padding:14px;background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:8px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent4);margin-bottom:6px">SCENARIO A — LOSSES OFFSET GAINS</div><div style="font-size:11px;color:var(--text);line-height:1.7">Sell BTC/ETH at a gain in H2 2026. Simultaneously sell RSC/VPAY/ZORA at a loss. Losses offset gains dollar-for-dollar. Potential tax saving: $3,000-$8,000+ depending on gain size and your tax rate.</div></div>
-      <div style="padding:14px;background:rgba(0,200,255,0.05);border:1px solid rgba(0,200,255,0.15);border-radius:8px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent);margin-bottom:6px">SCENARIO B — HARVEST THEN REBUY</div><div style="font-size:11px;color:var(--text);line-height:1.7">Sell RSC/VPAY to harvest the loss, then immediately rebuy at the same price. Lock in the tax loss with zero economic change. Legal for crypto in 2026. No 30-day waiting period required unlike stocks.</div></div>
-      <div style="padding:14px;background:rgba(255,200,50,0.05);border:1px solid rgba(255,200,50,0.15);border-radius:8px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent3);margin-bottom:6px">SCENARIO C — $3K INCOME OFFSET</div><div style="font-size:11px;color:var(--text);line-height:1.7">If losses exceed gains, up to $3,000/yr of net capital losses can offset ordinary income. Remaining losses carry forward to future years indefinitely. Exiting losers this year can reduce your W-2 tax bill.</div></div>
-    </div>
-  </div>
-  <div class="grid-2" style="margin-bottom:20px">
-    <div class="panel-lg">
-      <div class="panel-title">DELOITTE CRYPTO TAX CALENDAR 2026</div>
-      <table class="data-table">
-        <thead><tr><th>Date</th><th>Action Required</th><th>Priority</th></tr></thead>
-        <tbody>
-          <tr><td style="color:var(--accent3)">Now — Mar 31</td><td>Exit losing positions to lock in Q1 2026 loss</td><td style="color:var(--accent4)">HIGH</td></tr>
-          <tr><td style="color:var(--accent3)">April 15, 2026</td><td>File 2025 crypto trades. Use Koinly or CoinTracker.</td><td style="color:var(--accent2)">CRITICAL</td></tr>
-          <tr><td style="color:var(--accent3)">June 15, 2026</td><td>Q2 estimated tax payment if large gains realized</td><td style="color:var(--accent3)">MEDIUM</td></tr>
-          <tr><td style="color:var(--accent3)">H2 2026 Bull</td><td>Spread exits across 2026-2027 tax years if possible</td><td style="color:var(--accent3)">PLAN AHEAD</td></tr>
-          <tr><td style="color:var(--accent3)">Dec 31, 2026</td><td>Final loss harvesting. Document all 2026 trades.</td><td style="color:var(--accent4)">HIGH</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="panel-lg">
-      <div class="panel-title">STAKING INCOME — Special Tax Treatment</div>
-      <div style="font-size:12px;line-height:1.8;color:var(--text)">
-        <p style="margin-bottom:10px">SOL (~$664/yr) and AVAX (~$358/yr) staking rewards are taxed as <strong style="color:var(--accent3)">ordinary income</strong> at the fair market value on the day received — not when sold.</p>
-        <p style="margin-bottom:10px"><strong>What this means:</strong> If rewards received when SOL = $135, that is your cost basis. Selling later when SOL = $200 means capital gains on the $65 difference, plus original income tax on receipt.</p>
-        <p><strong style="color:var(--accent4)">Recommended tax tools:</strong> Koinly (from $49/yr), CoinTracker ($59/yr), TaxBit ($50/yr). All auto-import from Coinbase and major wallets. Connect once — they track everything automatically.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════ MORGAN STANLEY ═══ -->
-<div id="page-morganstanley" class="page">
-  <div class="page-header">
-    <div class="firm-tag">MORGAN STANLEY WEALTH MANAGEMENT // FRAMEWORK 12 — PORTFOLIO ARCHITECTURE</div>
-    <h2>CORE / SATELLITE ARCHITECTURE</h2>
-    <p>Morgan Stanley's investment policy framework applied to crypto. Structures your portfolio into a stable high-conviction core plus catalyst-driven satellite positions, with tax-location optimization and benchmark tracking.</p>
-  </div>
-  <div class="grid-2" style="margin-bottom:24px">
-    <div class="panel-lg">
-      <div class="panel-title">CURRENT vs MORGAN STANLEY TARGET ALLOCATION</div>
-      <table class="data-table">
-        <thead><tr><th>Bucket</th><th>Assets</th><th>Current %</th><th>MS Target</th><th>Gap</th></tr></thead>
-        <tbody>
-          <tr><td style="color:var(--accent4)">CORE — Anchor</td><td>BTC + ETH</td><td style="color:var(--accent2)">19.4%</td><td style="color:var(--accent4)">45%</td><td style="color:var(--accent2)">-25.6pp</td></tr>
-          <tr><td style="color:var(--accent)">CORE — Income</td><td>SOL + AVAX staked</td><td style="color:var(--accent3)">17.7%</td><td style="color:var(--accent4)">20%</td><td style="color:var(--accent3)">-2.3pp</td></tr>
-          <tr><td style="color:var(--accent3)">SATELLITE — Catalyst</td><td>XRP, LINK, HBAR, QNT</td><td style="color:var(--accent3)">27.9%</td><td style="color:var(--accent3)">20%</td><td style="color:var(--accent3)">+7.9pp</td></tr>
-          <tr><td style="color:var(--accent)">SATELLITE — Liquidity</td><td>USDC buffer</td><td style="color:var(--accent2)">0%</td><td style="color:var(--accent4)">10%</td><td style="color:var(--accent2)">-10pp</td></tr>
-          <tr><td style="color:var(--accent2)">EXIT LIST</td><td>RSC/VPAY/ZORA/SHIB/AMP</td><td style="color:var(--accent2)">33.4%</td><td style="color:var(--accent2)">0%</td><td style="color:var(--accent2)">-33.4pp</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="panel-lg">
-      <div class="panel-title">BUCKET DEFINITIONS</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <div style="padding:12px;background:rgba(0,229,160,0.05);border-left:3px solid var(--accent4);border-radius:4px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent4);margin-bottom:4px">CORE ANCHOR (45%)</div><div style="font-size:11px;color:var(--text)">Assets you hold through any drawdown. Wide moat, institutional adoption, proven network. BTC + ETH only qualify unambiguously in crypto.</div></div>
-        <div style="padding:12px;background:rgba(255,200,50,0.05);border-left:3px solid var(--accent3);border-radius:4px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent3);margin-bottom:4px">SATELLITE CATALYST (20%)</div><div style="font-size:11px;color:var(--text)">Assets with a specific thesis and 12-month catalyst. XRP (Clarity Act), LINK (oracle dominance), HBAR (enterprise). Exit when catalyst resolves — win or lose.</div></div>
-        <div style="padding:12px;background:rgba(0,200,255,0.05);border-left:3px solid var(--accent);border-radius:4px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent);margin-bottom:4px">LIQUIDITY BUFFER (10%)</div><div style="font-size:11px;color:var(--text)">USDC in high-yield account. Earns 5% APY ($417/yr). Enables buying dips without selling core. Not idle — it is your strategic reserve.</div></div>
-        <div style="padding:12px;background:rgba(255,61,107,0.05);border-left:3px solid var(--accent2);border-radius:4px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent2);margin-bottom:4px">NO BUCKET (0%)</div><div style="font-size:11px;color:var(--text)">RSC, VPAY, ZORA, SHIB, AMP fit no bucket in the MS framework. They are noise — not risk, not satellite, not yield. Exit.</div></div>
-      </div>
-    </div>
-  </div>
-  <div class="panel-lg" style="margin-bottom:20px">
-    <div class="panel-title">TAX-LOCATION OPTIMIZATION — Morgan Stanley Signature Layer</div>
-    <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px">Tax-location means putting the right assets in the right account type to minimize tax drag. For crypto, this matters most if you have or are considering a Roth IRA, Self-Directed IRA, or taxable brokerage.</div>
-    <div class="grid-3">
-      <div style="padding:14px;background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:8px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent4);margin-bottom:8px">ROTH IRA (Best Vehicle)</div><div style="font-size:11px;color:var(--text);line-height:1.7"><strong>Best assets:</strong> SOL, AVAX, LINK — highest growth potential. Growth is 100% tax-free. If SOL 10x inside a Roth, you owe $0 on withdrawal after 59½. Alto IRA and iTrustCapital offer crypto Roth IRAs.</div></div>
-      <div style="padding:14px;background:rgba(0,200,255,0.05);border:1px solid rgba(0,200,255,0.15);border-radius:8px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent);margin-bottom:8px">TAXABLE ACCOUNT (Current)</div><div style="font-size:11px;color:var(--text);line-height:1.7"><strong>Best assets:</strong> BTC, ETH (held long-term for LT cap gains rate). Avoid frequent trading. Each trade is a taxable event. USDC in high-yield savings outside crypto exchange if possible.</div></div>
-      <div style="padding:14px;background:rgba(255,200,50,0.05);border:1px solid rgba(255,200,50,0.15);border-radius:8px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent3);margin-bottom:8px">SDIRA (Future Option)</div><div style="font-size:11px;color:var(--text);line-height:1.7">Self-Directed IRA holding crypto directly. Tax-deferred or tax-free growth. $7,000 annual contribution limit (2026). Best for core BTC/ETH position long-term. Providers: Alto IRA, iTrustCapital, Bitcoin IRA.</div></div>
-    </div>
-  </div>
-  <div class="panel-lg" style="margin-bottom:20px">
-    <div class="panel-title">BENCHMARK TRACKING — Are Your Altcoins Actually Adding Value?</div>
-    <table class="data-table">
-      <thead><tr><th>Benchmark</th><th>Composition</th><th>What It Answers</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td style="color:var(--accent4)">Primary: BTC70/ETH30</td><td>70% BTC, 30% ETH</td><td>Did your altcoin bets add value?</td><td style="color:var(--muted)">Activates when cost basis provided</td></tr>
-        <tr><td style="color:var(--accent3)">Secondary: BTC Only</td><td>100% BTC</td><td>Would holding only BTC beat your returns?</td><td style="color:var(--muted)">Activates when cost basis provided</td></tr>
-        <tr><td style="color:var(--accent)">Tertiary: Total Crypto</td><td>Market-cap weighted</td><td>Did you beat the overall market?</td><td style="color:var(--muted)">Activates when cost basis provided</td></tr>
-      </tbody>
-    </table>
-    <div style="margin-top:14px;padding:14px;background:rgba(0,200,255,0.04);border:1px solid rgba(0,200,255,0.12);border-radius:8px;font-size:12px;color:var(--text);line-height:1.7">If your 20-asset portfolio has underperformed simply holding BTC, then every altcoin is destroying value, not adding it. Once n8n automation is running with cost basis, this benchmark comparison calculates automatically every week — making it instantly visible whether active portfolio management is actually paying off.</div>
-  </div>
-  <div class="panel-lg">
-    <div class="panel-title">MS INVESTMENT POLICY STATEMENT — REBALANCING TRIGGERS</div>
-    <table class="data-table">
-      <thead><tr><th>Trigger</th><th>Rule</th><th>Action</th><th>Frequency</th></tr></thead>
-      <tbody>
-        <tr><td style="color:var(--accent2)">Any asset > 20%</td><td>Concentration breach</td><td>Trim to 17% — proceeds to BTC/ETH or USDC</td><td>Monthly check</td></tr>
-        <tr><td style="color:var(--accent2)">BTC+ETH &lt; 35%</td><td>Core underweight</td><td>Add to BTC/ETH on next capital deployment</td><td>Monthly check</td></tr>
-        <tr><td style="color:var(--accent3)">USDC buffer &lt; 5%</td><td>Liquidity breach</td><td>Pause new satellite buys until buffer rebuilt</td><td>Monthly check</td></tr>
-        <tr><td style="color:var(--accent4)">Satellite catalyst fails</td><td>Thesis broken</td><td>Exit satellite position regardless of price</td><td>Event-driven</td></tr>
-        <tr><td style="color:var(--accent4)">Portfolio up &gt; 50% in 90D</td><td>Rally discipline</td><td>Take 15% off table into USDC, reset benchmark</td><td>Event-driven</td></tr>
-        <tr><td style="color:var(--muted)">Normal drift &lt; 5%</td><td>Bands intact</td><td>Let winners run — no action needed</td><td>No action</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ═══════════════════════ ESTATE PLAN ═══ -->
-<div id="page-estate" class="page">
-  <div class="page-header">
-    <div class="firm-tag">EDWARD JONES ESTATE PLANNING // FRAMEWORK 13 — DIGITAL ASSET SUCCESSION</div>
-    <h2>DIGITAL ASSET ESTATE PLAN</h2>
-    <p>Your $83,457 in digital assets is invisible to the legal system without a plan. Without this, your portfolio could be permanently inaccessible to your family — a total loss that no investment strategy can recover. An estimated $58B+ in crypto is permanently lost this way.</p>
-  </div>
-  <div style="padding:16px 20px;background:rgba(160,85,247,0.08);border:1px solid rgba(160,85,247,0.25);border-left:4px solid var(--accent5);border-radius:8px;margin-bottom:24px">
-    <div style="font-family:var(--mono);font-size:10px;color:var(--accent5);letter-spacing:2px;margin-bottom:6px">UNIQUE CRYPTO RISK — NOT COVERED BY ANY OTHER MODULE</div>
-    <div style="font-size:12px;color:var(--text);line-height:1.8">Crypto is a bearer asset — whoever has the private key has the asset. Your bank has legal processes for heirs. Your crypto wallet does not. This is the only financial risk in this engine that is 100% preventable with a one-time action at zero cost.</div>
-  </div>
-  <div class="grid-2" style="margin-bottom:24px">
-    <div class="panel-lg">
-      <div class="panel-title">DIGITAL ASSET ESTATE CHECKLIST</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)"><div style="font-size:16px;flex-shrink:0">☐</div><div><div style="font-size:12px;font-weight:600;color:white;margin-bottom:2px">Secure Seed Phrase Backup (Physical)</div><div style="font-family:var(--mono);font-size:10px;color:var(--muted)">Write seed phrases on paper — never digital. Store in fireproof safe OR safety deposit box. Never in photos, email, or cloud storage.</div></div></div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)"><div style="font-size:16px;flex-shrink:0">☐</div><div><div style="font-size:12px;font-weight:600;color:white;margin-bottom:2px">Digital Asset Inventory Document</div><div style="font-family:var(--mono);font-size:10px;color:var(--muted)">List every exchange account, wallet address, staking account with login instructions. Update after trades. Store with your will.</div></div></div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)"><div style="font-size:16px;flex-shrink:0">☐</div><div><div style="font-size:12px;font-weight:600;color:white;margin-bottom:2px">Letter of Instruction to Heirs</div><div style="font-family:var(--mono);font-size:10px;color:var(--muted)">Plain-English guide: what crypto is, where it is, how to access each account. Assume zero crypto knowledge. Keep this private — separate from your public will.</div></div></div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)"><div style="font-size:16px;flex-shrink:0">☐</div><div><div style="font-size:12px;font-weight:600;color:white;margin-bottom:2px">Will / Trust Updated for Digital Assets</div><div style="font-family:var(--mono);font-size:10px;color:var(--muted)">Reference your digital asset inventory. Assign a digital executor. A revocable living trust avoids probate entirely for crypto assets.</div></div></div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)"><div style="font-size:16px;flex-shrink:0">☐</div><div><div style="font-size:12px;font-weight:600;color:white;margin-bottom:2px">Beneficiary Designations on Exchanges</div><div style="font-family:var(--mono);font-size:10px;color:var(--muted)">Coinbase and major exchanges allow beneficiary designations that bypass probate. Check your account settings now — 5-minute action.</div></div></div>
-        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)"><div style="font-size:16px;flex-shrink:0">☐</div><div><div style="font-size:12px;font-weight:600;color:white;margin-bottom:2px">Trusted Person Knows Location — Not Contents</div><div style="font-family:var(--mono);font-size:10px;color:var(--muted)">At least one trusted person must know: crypto exists, where the inventory is, where the seed phrase safe is. NOT the seed phrase itself — just the location.</div></div></div>
-      </div>
-    </div>
+<!-- ═══════ ACTION PLAN ═══════ -->
+<div class="section-title">Master Action Plan — All 13 Frameworks Synthesized</div>
+<div style="background:#0a0f1a;border:1px solid #182030;border-radius:10px;padding:20px;margin-bottom:24px">
+  <div class="action-item">
+    <div class="action-num" style="color:#ff3d6b">01</div>
     <div>
-      <div class="panel-lg" style="margin-bottom:16px">
-        <div class="panel-title">CRYPTO-SPECIFIC ESTATE RISKS</div>
-        <table class="data-table">
-          <thead><tr><th>Risk</th><th>Your Exposure</th><th>Solution</th></tr></thead>
-          <tbody>
-            <tr><td style="color:var(--accent2)">Lost seed phrase</td><td>100% self-custody</td><td>2x physical backup, separate locations</td></tr>
-            <tr><td style="color:var(--accent2)">Staked assets locked</td><td>SOL + AVAX ($14,752)</td><td>Document unstaking process for heirs</td></tr>
-            <tr><td style="color:var(--accent3)">Exchange account locked</td><td>All exchange holdings</td><td>Beneficiary designation + instruction letter</td></tr>
-            <tr><td style="color:var(--accent3)">2FA device lost</td><td>All 2FA accounts</td><td>Store backup codes with estate documents</td></tr>
-            <tr><td style="color:var(--accent3)">Tax liability to heirs</td><td>All positions with gains</td><td>Stepped-up basis on death (consult CPA)</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="panel-lg">
-        <div class="panel-title">STEPPED-UP BASIS — Crypto Inheritance Tax Advantage</div>
-        <div style="font-size:12px;line-height:1.8;color:var(--text);margin-bottom:12px">Under current US law, when you die and pass assets to heirs, the cost basis resets to fair market value at date of death. Heirs can sell immediately with <strong style="color:var(--accent4)">zero capital gains tax</strong> regardless of how much the asset appreciated during your lifetime.</div>
-        <div style="padding:14px;background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:8px;margin-bottom:10px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent4);margin-bottom:6px">EXAMPLE</div><div style="font-size:11px;color:var(--text);line-height:1.7">You bought BTC at $30K. Worth $140K at death. Heir's basis = $140K. They sell at $140K. They owe $0. Your lifetime gain of $110K/BTC passes completely tax-free.</div></div>
-        <div style="padding:14px;background:rgba(255,61,107,0.05);border:1px solid rgba(255,61,107,0.15);border-radius:8px"><div style="font-family:var(--mono);font-size:9px;color:var(--accent2);margin-bottom:6px">RISK FLAG</div><div style="font-size:11px;color:var(--text);line-height:1.7">This law could change. Legislative discussions have proposed eliminating stepped-up basis for large estates. Monitor tax law changes annually. Consult a CPA for your specific situation.</div></div>
-      </div>
+      <div class="action-title">Stake ETH via Lido — earn 3.5-4.5% APY</div>
+      <div class="action-body">Your $3,520.72 in ETH earns 0%. Lido liquid staking gives 3.5-4.5% APY while staying fully liquid. ~$150/yr for 30 minutes of setup. Do this now.</div>
+      <span class="action-tag tag-urgent">YIELD — Harvard + BlackRock</span>
+    </div>
+  </div>
+  <div class="action-item">
+    <div class="action-num" style="color:#ff3d6b">02</div>
+    <div>
+      <div class="action-title">Build 8-10% USDC buffer for dry powder</div>
+      <div class="action-body">Bridgewater principle: always hold a volatility buffer. USDC earns 4.5-5% APY AND gives you buying power if a macro dip hits. Fund from partial profit-taking when any position is up.</div>
+      <span class="action-tag tag-urgent">RISK MANAGEMENT — Bridgewater + BlackRock</span>
+    </div>
+  </div>
+  <div class="action-item">
+    <div class="action-num" style="color:#ffc832">03</div>
+    <div>
+      <div class="action-title">Add to BTC only when Citadel entry signal triggers</div>
+      <div class="action-body">Do NOT buy just because it feels cheap. Wait for: RSI drops to 20-22 AND daily volume spikes AND $71K support holds. Then deploy USDC aggressively. The signal is not active yet.</div>
+      <span class="action-tag tag-hold">CONDITIONAL — Citadel Technical + Ren Tech</span>
+    </div>
+  </div>
+  <div class="action-item">
+    <div class="action-num" style="color:#ffc832">04</div>
+    <div>
+      <div class="action-title">Watch for H2 2026 Bull Window</div>
+      <div class="action-body">McKinsey macro: if Fed cuts resume H2 2026 + Clarity Act passes + institutional flows accelerate → BTC $110-140K case. At those levels your portfolio reaches $44,850 — a +28% gain from cost basis.</div>
+      <span class="action-tag tag-hold">STRATEGIC — McKinsey + JPMorgan + Ren Tech</span>
+    </div>
+  </div>
+  <div class="action-item">
+    <div class="action-num" style="color:#00e5a0">05</div>
+    <div>
+      <div class="action-title">Digital Estate Plan — one-time urgent action</div>
+      <div class="action-body">Your $20,800 portfolio is invisible to your family without seed phrase documentation + a letter of instruction. Check Coinbase beneficiary designations. Store backup codes. This is the only risk that is 100% preventable at zero cost.</div>
+      <span class="action-tag tag-watch">ESTATE — Edward Jones Framework 13</span>
     </div>
   </div>
 </div>
 
-<script>
-function showPage(id, el) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  const page = document.getElementById('page-' + id);
-  if(page) page.classList.add('active');
-  if(el) el.classList.add('active');
-  else {
-    // fallback: find the tab by matching onclick
-    document.querySelectorAll('.nav-tab').forEach(t => {
-      if(t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + id + "'")) {
-        t.classList.add('active');
-      }
-    });
-  }
-}
-</script>
+<!-- ═══════ DELOITTE TAX ═══════ -->
+<div class="section-title">Deloitte Tax — Key Actions This Quarter</div>
+<div style="background:#0a0f1a;border:1px solid rgba(255,200,50,0.2);border-radius:10px;padding:20px;margin-bottom:24px">
+  <div class="two-col" style="margin-bottom:0">
+    <div class="alert al-grn">
+      <div class="alert-title">✅ No Wash-Sale Rule for Crypto</div>
+      <div class="alert-body">You can sell a losing position and immediately rebuy it — locking in the tax loss while maintaining your position. Powerful advantage vs stocks. Losses offset gains dollar-for-dollar.</div>
+    </div>
+    <div class="alert al-yel">
+      <div class="alert-title">⏰ Staking Income = Ordinary Income</div>
+      <div class="alert-body">SOL staking rewards (~$664/yr) are taxed as ordinary income at receipt, not when sold. Track cost basis for each reward. Use Koinly or CoinTracker ($49-59/yr) to automate this.</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /body -->
+
+<!-- ═══════ FOOTER ═══════ -->
+<div class="footer">
+  <div class="footer-brand">PORTFOLIO ENGINE // ALADDIN FRAMEWORK // v4</div>
+  <div class="footer-note">Auto-generated Monday, March 9, 2026 — Not financial advice. For informational purposes only.</div>
+</div>
+
 </body>
 </html>
